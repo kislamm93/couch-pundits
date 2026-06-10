@@ -17,7 +17,7 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
         {medal ? medal.label : rank}
       </span>
       <div className="flex-1 min-w-0">
-        <p className={`font-semibold truncate ${isMe ? 'text-accent' : 'text-white'}`}>
+        <p className={`font-semibold truncate ${isMe ? 'text-accent' : 'text-fg'}`}>
           {username} {isMe && <span className="text-xs font-normal text-muted">(you)</span>}
         </p>
         <p className="text-xs text-muted">

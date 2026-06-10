@@ -17,7 +17,14 @@
       "Bash(.venv/bin/python -c ' *)",
       "Bash(timeout 8 docker info)",
       "Bash(npm ci *)",
-      "Bash(VITE_BASE=/wc2026-project/ VITE_API_BASE=https://wc2026-api.onrender.com npm run build)"
+      "Bash(VITE_BASE=/wc2026-project/ VITE_API_BASE=https://wc2026-api.onrender.com npm run build)",
+      "Bash(python3 -m py_compile app/main.py)",
+      "Bash(python3 -m py_compile app/routers/predictions.py app/models.py)",
+      "Bash(python3 -m py_compile app/main.py app/models.py app/routers/auth.py)",
+      "Bash(python3 -m py_compile app/main.py app/models.py)",
+      "Bash(curl -s -m 5 http://localhost:8000/fixtures)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('fixtures:', len\\(d\\)\\); teams=set\\(\\); [ \\(teams.add\\(f['home_team']\\), teams.add\\(f['away_team']\\)\\) for f in d]; print\\('teams:', len\\(teams\\)\\)\")",
+      "Bash(ipconfig getifaddr *)"
     ]
   }
 }

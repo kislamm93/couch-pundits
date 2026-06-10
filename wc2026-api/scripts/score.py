@@ -22,6 +22,11 @@ def _outcome(home: int, away: int) -> str:
 def compute_points(pred_home: int, pred_away: int, home_score: int, away_score: int) -> int:
     if pred_home == home_score and pred_away == away_score:
         return 5
+    # Correct signed goal difference on a decisive result (1-0 ≠ 0-1).
+    # Draws (pred_home == pred_away) are excluded — they fall through to the
+    # outcome tier below and score 2, since every draw shares a 0 difference.
+    if pred_home != pred_away and (pred_home - pred_away) == (home_score - away_score):
+        return 3
     if _outcome(pred_home, pred_away) == _outcome(home_score, away_score):
         return 2
     return 0

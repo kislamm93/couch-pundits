@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { getFixtures, getPredictionsMe } from '../api'
+import { useAuth } from '../context/AuthContext'
 import FilterBar from '../components/FilterBar'
 import FilterPanel from '../components/FilterPanel'
 import MatchCard from '../components/MatchCard'
 import Toast from '../components/Toast'
+import ThemeToggle from '../components/ThemeToggle'
 import { MatchCardSkeleton } from '../components/Skeleton'
 
 function localDateStr(utcString) {
   const d = new Date(utcString)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function todayStr() {
+  const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
@@ -26,11 +33,14 @@ function groupByDate(fixtures) {
 }
 
 export default function MatchesScreen() {
+  const { auth } = useAuth()
+  const myTeam = auth?.favoriteTeam || ''
   const [fixtures, setFixtures] = useState([])
   const [predMap, setPredMap] = useState({})
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ date: null, group: 'All', team: '' })
   const [hidePredicted, setHidePredicted] = useState(false)
+  const [hideCompleted, setHideCompleted] = useState(true)
   const [panelOpen, setPanelOpen] = useState(false)
   const [toast, setToast] = useState(null)
 
@@ -50,16 +60,16 @@ export default function MatchesScreen() {
 
   useEffect(() => { load() }, [load])
 
-  function todayStr() {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  }
-
   const todayActive = filters.date === todayStr()
+  const myTeamActive = !!myTeam && filters.team === myTeam
 
   function handleTodayClick() {
     const today = todayStr()
     setFilters(f => ({ ...f, date: f.date === today ? null : today }))
+  }
+
+  function handleMyTeamClick() {
+    setFilters(f => ({ ...f, team: f.team === myTeam ? '' : myTeam }))
   }
 
   const filtered = fixtures.filter(f => {
@@ -67,6 +77,7 @@ export default function MatchesScreen() {
     if (filters.team && f.home_team !== filters.team && f.away_team !== filters.team) return false
     if (filters.date && localDateStr(f.kickoff_utc) !== filters.date) return false
     if (hidePredicted && predMap[f.match_id]) return false
+    if (hideCompleted && f.status === 'finished') return false
     return true
   })
   const grouped = groupByDate(filtered)
@@ -81,6 +92,7 @@ export default function MatchesScreen() {
   function clearAll() {
     setFilters({ date: null, group: 'All', team: '' })
     setHidePredicted(false)
+    setHideCompleted(false)
   }
 
   return (
@@ -96,8 +108,9 @@ export default function MatchesScreen() {
       )}
 
       {/* Header */}
-      <div className="px-4 pt-safe pt-6 pb-2">
-        <h1 className="text-2xl font-black">World Cup 2026</h1>
+      <div className="px-4 pt-safe pt-6 pb-2 flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-black">Fixtures</h1>
+        <ThemeToggle />
       </div>
 
       <FilterBar
@@ -106,8 +119,13 @@ export default function MatchesScreen() {
         onClear={handleClearFilter}
         hidePredicted={hidePredicted}
         onToggleHidePredicted={() => setHidePredicted(v => !v)}
+        hideCompleted={hideCompleted}
+        onToggleHideCompleted={() => setHideCompleted(v => !v)}
         todayActive={todayActive}
         onTodayClick={handleTodayClick}
+        myTeam={myTeam}
+        myTeamActive={myTeamActive}
+        onMyTeamClick={handleMyTeamClick}
       />
 
       {/* Match list */}

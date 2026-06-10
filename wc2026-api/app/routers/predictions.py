@@ -3,14 +3,14 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from app.models import PredictionRequest, PredictionResponse
 from app.db import fixtures_col, predictions_col
-from app.security import get_current_user
+from app.security import get_current_account
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 
 @router.get("/me", response_model=List[PredictionResponse])
-async def my_predictions(username: str = Depends(get_current_user)):
-    cursor = predictions_col().find({"username": username}, {"_id": 0})
+async def my_predictions(account_id: str = Depends(get_current_account)):
+    cursor = predictions_col().find({"account_id": account_id}, {"_id": 0})
     return await cursor.to_list(length=None)
 
 
@@ -18,7 +18,7 @@ async def my_predictions(username: str = Depends(get_current_user)):
 async def upsert_prediction(
     match_id: int,
     body: PredictionRequest,
-    username: str = Depends(get_current_user),
+    account_id: str = Depends(get_current_account),
 ):
     fixture = await fixtures_col().find_one({"match_id": match_id})
     if not fixture:
@@ -28,17 +28,21 @@ async def upsert_prediction(
     if datetime.now(timezone.utc) >= kickoff:
         raise HTTPException(status_code=409, detail="Prediction locked — match has kicked off")
 
-    doc = {
-        "username": username,
-        "match_id": match_id,
-        "pred_home": body.pred_home,
-        "pred_away": body.pred_away,
-        "points": None,
-        "updated_at": datetime.now(timezone.utc),
-    }
+    now = datetime.now(timezone.utc)
     await predictions_col().update_one(
-        {"username": username, "match_id": match_id},
-        {"$set": doc},
+        {"account_id": account_id, "match_id": match_id},
+        {
+            "$set": {
+                "account_id": account_id,
+                "match_id": match_id,
+                "pred_home": body.pred_home,
+                "pred_away": body.pred_away,
+                "points": None,
+                "updated_at": now,
+            },
+            # Set only on first insert so it records when the pick was first made
+            "$setOnInsert": {"predicted_at": now},
+        },
         upsert=True,
     )
     return PredictionResponse(

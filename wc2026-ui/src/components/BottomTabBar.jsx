@@ -1,7 +1,7 @@
 import React from 'react'
 
 const TABS = [
-  { id: 'matches', label: 'Matches', icon: IconBall },
+  { id: 'matches', label: 'Fixtures', icon: IconBall },
   { id: 'leaderboard', label: 'Leaderboard', icon: IconTrophy },
   { id: 'profile', label: 'Profile', icon: IconUser },
 ]

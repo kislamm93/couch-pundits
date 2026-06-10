@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import BottomTabBar from './components/BottomTabBar'
 import AuthScreen from './screens/AuthScreen'
 import MatchesScreen from './screens/MatchesScreen'
@@ -9,6 +10,11 @@ import ProfileScreen from './screens/ProfileScreen'
 function AppInner() {
   const { auth } = useAuth()
   const [tab, setTab] = useState('matches')
+
+  // Always land on the matches view right after logging in
+  useEffect(() => {
+    if (auth) setTab('matches')
+  }, [auth])
 
   if (!auth) return <AuthScreen />
 
@@ -27,7 +33,9 @@ function AppInner() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppInner />
+      <ThemeProvider>
+        <AppInner />
+      </ThemeProvider>
     </AuthProvider>
   )
 }

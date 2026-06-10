@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { getLeaderboard, getPredictionsMe, getFixtures } from '../api'
+import { getLeaderboard, getPredictionsMe, getFixtures, updateProfile } from '../api'
 import { useAuth } from '../context/AuthContext'
 import Skeleton from '../components/Skeleton'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function ProfileScreen() {
-  const { auth, logout } = useAuth()
+  const { auth, logout, login } = useAuth()
   const [stats, setStats] = useState(null)
   const [predictions, setPredictions] = useState([])
   const [fixtureMap, setFixtureMap] = useState({})
+  const [teams, setTeams] = useState([])
+  const [usernameInput, setUsernameInput] = useState(auth?.username || '')
+  const [teamInput, setTeamInput] = useState(auth?.favoriteTeam || '')
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState(null) // { text, error }
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,6 +30,9 @@ export default function ProfileScreen() {
         const map = {}
         for (const f of fixtures) map[f.match_id] = f
         setFixtureMap(map)
+        const set = new Set()
+        for (const f of fixtures) { set.add(f.home_team); set.add(f.away_team) }
+        setTeams(Array.from(set).sort())
       } catch {
         // silently fail — user will see empty state
       } finally {
@@ -32,6 +41,39 @@ export default function ProfileScreen() {
     }
     load()
   }, [auth])
+
+  // Keep the form in sync with the stored profile (e.g. after a successful save)
+  useEffect(() => {
+    setUsernameInput(auth?.username || '')
+    setTeamInput(auth?.favoriteTeam || '')
+  }, [auth?.username, auth?.favoriteTeam])
+
+  const nextUsername = usernameInput.trim().toLowerCase()
+  const usernameChanged = nextUsername !== (auth?.username || '')
+  const teamChanged = teamInput !== (auth?.favoriteTeam || '')
+  const dirty = usernameChanged || teamChanged
+
+  async function handleSave() {
+    setMsg(null)
+    if (usernameChanged && (nextUsername.length < 3 || nextUsername.length > 20)) {
+      setMsg({ text: 'Username must be 3–20 characters', error: true })
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await updateProfile({
+        ...(usernameChanged ? { username: nextUsername } : {}),
+        ...(teamChanged ? { favoriteTeam: teamInput } : {}),
+      })
+      // Apply the (possibly new) token, username and team across the app
+      login(res.access_token, res.username, res.favorite_team || '')
+      setMsg({ text: 'Saved ✓', error: false })
+    } catch (err) {
+      setMsg({ text: err.message, error: true })
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const initial = auth?.username?.[0]?.toUpperCase() || '?'
 
@@ -43,7 +85,9 @@ export default function ProfileScreen() {
         </div>
         <div>
           <h1 className="text-xl font-black">@{auth?.username}</h1>
-          <p className="text-xs text-muted">Group Stage</p>
+        </div>
+        <div className="ml-auto">
+          <ThemeToggle />
         </div>
       </div>
 
@@ -68,6 +112,60 @@ export default function ProfileScreen() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Account editor */}
+        <div>
+          <h2 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Account</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-muted mb-1.5">Username</label>
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                autoCapitalize="none"
+                autoCorrect="off"
+                style={{ fontSize: '16px' }}
+                className="w-full bg-card border border-border rounded-xl px-4 py-3 text-fg placeholder-muted outline-none focus:border-accent transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-muted mb-1.5">Favorite team</label>
+              <div className="relative">
+                <select
+                  value={teamInput}
+                  onChange={(e) => setTeamInput(e.target.value)}
+                  disabled={teams.length === 0}
+                  style={{ fontSize: '16px' }}
+                  className={`w-full appearance-none bg-card border border-border rounded-xl px-4 py-3 pr-10 outline-none focus:border-accent transition-colors disabled:opacity-60 ${teamInput ? 'text-fg' : 'text-muted'}`}
+                >
+                  <option value="" disabled>Pick your team…</option>
+                  {teams.map((t) => (
+                    <option key={t} value={t} className="text-fg">{t}</option>
+                  ))}
+                </select>
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <button
+              onClick={handleSave}
+              disabled={!dirty || saving}
+              className="w-full py-3 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform"
+            >
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+
+            {msg ? (
+              <p className={`text-xs ${msg.error ? 'text-red-400' : 'text-muted'}`}>{msg.text}</p>
+            ) : (
+              <p className="text-xs text-muted">Your team powers the “My Team” filter on the Matches tab.</p>
+            )}
+          </div>
         </div>
 
         {/* Prediction list */}

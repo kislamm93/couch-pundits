@@ -38,13 +38,13 @@ function CalendarSection({ fixtures, selectedDate, onDateChange }) {
         <button
           onClick={() => setMonth(m => Math.max(5, m - 1))}
           disabled={month === 5}
-          className="w-8 h-8 rounded-full bg-border flex items-center justify-center disabled:opacity-25 text-white text-lg leading-none"
+          className="w-8 h-8 rounded-full bg-border flex items-center justify-center disabled:opacity-25 text-fg text-lg leading-none"
         >‹</button>
         <span className="font-semibold text-sm">{MONTH_NAMES[month]} {year}</span>
         <button
           onClick={() => setMonth(m => Math.min(6, m + 1))}
           disabled={month === 6}
-          className="w-8 h-8 rounded-full bg-border flex items-center justify-center disabled:opacity-25 text-white text-lg leading-none"
+          className="w-8 h-8 rounded-full bg-border flex items-center justify-center disabled:opacity-25 text-fg text-lg leading-none"
         >›</button>
       </div>
 
@@ -69,7 +69,7 @@ function CalendarSection({ fixtures, selectedDate, onDateChange }) {
               className={[
                 'w-9 h-9 mx-auto rounded-full flex items-center justify-center text-sm font-medium transition-colors',
                 isSelected ? 'bg-accent text-bg font-bold' : '',
-                hasMatch && !isSelected ? 'text-white hover:bg-border' : '',
+                hasMatch && !isSelected ? 'text-fg hover:bg-border' : '',
                 !hasMatch ? 'text-muted/25 cursor-default' : '',
               ].join(' ')}
             >
@@ -123,7 +123,7 @@ function TeamAutocomplete({ allTeams, value, onChange }) {
           onFocus={() => input && setOpen(true)}
           onBlur={handleBlur}
           placeholder="Type a country name…"
-          className="w-full bg-bg border border-border rounded-xl pl-4 pr-9 py-2.5 text-sm text-white placeholder-muted outline-none focus:border-accent transition-colors"
+          className="w-full bg-bg border border-border rounded-xl pl-4 pr-9 py-2.5 text-sm text-fg placeholder-muted outline-none focus:border-accent transition-colors"
         />
         {input && (
           <button
@@ -140,7 +140,7 @@ function TeamAutocomplete({ allTeams, value, onChange }) {
               key={t}
               onMouseDown={() => select(t)}
               className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-border ${
-                value === t ? 'text-accent font-semibold' : 'text-white'
+                value === t ? 'text-accent font-semibold' : 'text-fg'
               }`}
             >
               {t}
@@ -206,7 +206,8 @@ export default function FilterPanel({ fixtures, filters, onChange, onClose }) {
               <select
                 value={filters.group}
                 onChange={e => onChange({ ...filters, group: e.target.value })}
-                className="w-full appearance-none bg-bg border border-border rounded-xl px-4 py-2.5 text-sm font-sans text-white outline-none focus:border-accent transition-colors cursor-pointer"
+                style={{ fontSize: '16px' }}
+                className="w-full appearance-none bg-bg border border-border rounded-xl px-4 py-2.5 text-base font-sans font-medium text-fg outline-none focus:border-accent transition-colors cursor-pointer"
               >
                 <option value="All">All groups</option>
                 {GROUPS.map(g => (

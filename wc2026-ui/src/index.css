@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme palettes — channels are space-separated RGB for Tailwind <alpha-value> */
+:root, .dark {
+  --c-bg: 11 14 20;        /* #0B0E14 */
+  --c-card: 21 26 35;      /* #151A23 */
+  --c-border: 34 41 54;    /* #222936 */
+  --c-accent: 0 224 122;   /* #00E07A */
+  --c-muted: 138 147 163;  /* #8A93A3 */
+  --c-fg: 255 255 255;     /* #FFFFFF */
+}
+
+.light {
+  --c-bg: 247 249 251;     /* #F7F9FB */
+  --c-card: 255 255 255;   /* #FFFFFF */
+  --c-border: 225 229 235; /* #E1E5EB */
+  --c-accent: 0 168 90;    /* #00A85A — darker green for contrast on light */
+  --c-muted: 91 102 117;   /* #5B6675 */
+  --c-fg: 18 24 33;        /* #121821 */
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -9,10 +28,11 @@
 
 html, body, #root {
   height: 100%;
-  background-color: #0B0E14;
-  color: #fff;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-fg));
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Momentum scrolling on iOS */

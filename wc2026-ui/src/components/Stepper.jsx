@@ -7,7 +7,7 @@ export default function Stepper({ value, onChange, disabled }) {
         aria-label="Decrease"
         disabled={disabled || value <= 0}
         onClick={() => onChange(Math.max(0, value - 1))}
-        className="w-10 h-10 rounded-full bg-border flex items-center justify-center text-white text-xl font-bold disabled:opacity-30 active:scale-95 transition-transform"
+        className="w-10 h-10 rounded-full bg-border flex items-center justify-center text-fg text-xl font-bold disabled:opacity-30 active:scale-95 transition-transform"
       >
         −
       </button>
@@ -16,7 +16,7 @@ export default function Stepper({ value, onChange, disabled }) {
         aria-label="Increase"
         disabled={disabled}
         onClick={() => onChange(value + 1)}
-        className="w-10 h-10 rounded-full bg-border flex items-center justify-center text-white text-xl font-bold disabled:opacity-30 active:scale-95 transition-transform"
+        className="w-10 h-10 rounded-full bg-border flex items-center justify-center text-fg text-xl font-bold disabled:opacity-30 active:scale-95 transition-transform"
       >
         +
       </button>

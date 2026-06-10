@@ -26,8 +26,9 @@ async def connect_db():
     try:
         await users_col().create_index("username", unique=True)
         await fixtures_col().create_index("match_id", unique=True)
+        await users_col().create_index("account_id", unique=True)
         await predictions_col().create_index(
-            [("username", 1), ("match_id", 1)], unique=True
+            [("account_id", 1), ("match_id", 1)], unique=True
         )
         print("MongoDB connected and indexes ensured.")
     except Exception as exc:

@@ -1,33 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Stepper from './Stepper'
 import { putPrediction } from '../api'
-
-const FLAG_MAP = {
-  'Mexico': '🇲🇽', 'USA': '🇺🇸', 'Canada': '🇨🇦',
-  'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'Colombia': '🇨🇴', 'Ecuador': '🇪🇨',
-  'Uruguay': '🇺🇾', 'Chile': '🇨🇱', 'Paraguay': '🇵🇾', 'Peru': '🇵🇪',
-  'Bolivia': '🇧🇴', 'Venezuela': '🇻🇪',
-  'Germany': '🇩🇪', 'France': '🇫🇷', 'Spain': '🇪🇸', 'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  'Portugal': '🇵🇹', 'Netherlands': '🇳🇱', 'Belgium': '🇧🇪', 'Italy': '🇮🇹',
-  'Croatia': '🇭🇷', 'Switzerland': '🇨🇭', 'Austria': '🇦🇹', 'Denmark': '🇩🇰',
-  'Sweden': '🇸🇪', 'Norway': '🇳🇴', 'Poland': '🇵🇱',
-  'Czech Republic': '🇨🇿', 'Bosnia & Herzegovina': '🇧🇦',
-  'Serbia': '🇷🇸', 'Hungary': '🇭🇺', 'Romania': '🇷🇴', 'Ukraine': '🇺🇦',
-  'Turkey': '🇹🇷', 'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Wales': '🏴󠁧󠁢󠁷󠁬󠁳󠁿', 'Slovakia': '🇸🇰',
-  'Slovenia': '🇸🇮', 'Albania': '🇦🇱', 'Georgia': '🇬🇪',
-  'Morocco': '🇲🇦', 'Senegal': '🇸🇳', 'Nigeria': '🇳🇬', 'Egypt': '🇪🇬',
-  'South Africa': '🇿🇦', 'Cameroon': '🇨🇲', 'Ghana': '🇬🇭', 'Tunisia': '🇹🇳',
-  'Algeria': '🇩🇿', 'Mali': '🇲🇱', 'Ivory Coast': '🇨🇮',
-  'Cape Verde': '🇨🇻', 'DR Congo': '🇨🇩', 'Haiti': '🇭🇹',
-  'Japan': '🇯🇵', 'South Korea': '🇰🇷', 'Australia': '🇦🇺', 'Iran': '🇮🇷',
-  'Saudi Arabia': '🇸🇦', 'Qatar': '🇶🇦', 'Iraq': '🇮🇶', 'Uzbekistan': '🇺🇿',
-  'China': '🇨🇳', 'Indonesia': '🇮🇩', 'Jordan': '🇯🇴', 'Bahrain': '🇧🇭',
-  'New Zealand': '🇳🇿', 'Curaçao': '🇨🇼',
-}
-
-function teamFlag(name) {
-  return FLAG_MAP[name] || '⚽'
-}
+import { teamFlag } from '../teamFlags'
 
 function formatKickoff(utcString) {
   return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date(utcString))
@@ -42,6 +16,23 @@ function countdown(utcString) {
   const m = Math.floor((diff % 3600000) / 60000)
   if (h > 0) return `in ${h}h ${m}m`
   return `in ${m}m`
+}
+
+function LockIcon({ className = 'w-3.5 h-3.5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className = 'w-3.5 h-3.5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  )
 }
 
 function PointsBadge({ points }) {
@@ -99,14 +90,24 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
     <div className="bg-card border border-border rounded-card p-4 space-y-3">
       {/* Header row */}
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
             Group {fixture.group}
           </span>
+          {isFinished ? (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
+              <CheckIcon className="w-3 h-3" /> Completed
+            </span>
+          ) : prediction ? (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent bg-accent/10 rounded-full px-2 py-0.5">
+              <LockIcon className="w-3 h-3" /> Locked
+            </span>
+          ) : null}
         </div>
         <div className="text-right">
           <p className="text-xs text-muted">{formatKickoff(fixture.kickoff_utc)}</p>
-          <p className="text-xs text-muted truncate max-w-[140px]">{fixture.stadium} · {fixture.city}</p>
+          <p className="text-xs text-muted">{fixture.stadium}</p>
+          <p className="text-xs text-muted">{fixture.city}</p>
         </div>
       </div>
 
@@ -117,26 +118,30 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
       )}
 
       {isFinished ? (
-        /* ── FINISHED STATE ── */
+        /* ── FINISHED STATE (compact: Home  score  Away in one row) ── */
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{teamFlag(fixture.home_team)} {fixture.home_team}</span>
-            <PointsBadge points={prediction?.points} />
+          <div className="flex items-center gap-2">
+            <span className="font-semibold flex items-center gap-1 flex-1 min-w-0">
+              <span>{teamFlag(fixture.home_team)}</span>
+              <span className="truncate">{fixture.home_team}</span>
+            </span>
+            <span className="text-2xl font-black tabular-nums flex-shrink-0">
+              {fixture.home_score}<span className="text-muted mx-1.5">–</span>{fixture.away_score}
+            </span>
+            <span className="font-semibold flex items-center justify-end gap-1 flex-1 min-w-0">
+              <span className="truncate text-right">{fixture.away_team}</span>
+              <span>{teamFlag(fixture.away_team)}</span>
+            </span>
           </div>
-          <div className="flex items-center justify-center gap-4 py-2">
-            <span className="text-4xl font-black tabular-nums">{fixture.home_score}</span>
-            <span className="text-muted font-bold">—</span>
-            <span className="text-4xl font-black tabular-nums">{fixture.away_score}</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted">
+              {prediction ? `Your pick: ${prediction.pred_home}–${prediction.pred_away}` : ''}
+            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <PointsBadge points={prediction?.points} />
+              <span className="text-xs text-muted bg-border rounded-full px-2 py-0.5">FT</span>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{teamFlag(fixture.away_team)} {fixture.away_team}</span>
-            <span className="text-xs text-muted bg-border rounded-full px-2 py-0.5">FT</span>
-          </div>
-          {prediction && (
-            <p className="text-xs text-muted text-center">
-              Your pick: {prediction.pred_home}–{prediction.pred_away}
-            </p>
-          )}
         </div>
       ) : isLocked ? (
         /* ── LOCKED STATE ── */
@@ -166,14 +171,14 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
             <Stepper value={awayVal} onChange={setAwayVal} />
           </div>
           {saved && !dirty && (
-            <p className="text-xs text-muted text-center">Your pick saved ✓</p>
+            <p className="text-xs text-muted text-center">Pick locked in — editable until kickoff</p>
           )}
           <button
             onClick={handleSave}
             disabled={saving || (!dirty && saved)}
-            className="w-full py-2.5 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform"
+            className="w-full py-2.5 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
           >
-            {saving ? 'Saving…' : saved && !dirty ? 'Saved ✓' : 'Save pick'}
+            {saving ? 'Saving…' : saved && !dirty ? (<><LockIcon className="w-4 h-4" /> Locked</>) : 'Save pick'}
           </button>
         </div>
       )}

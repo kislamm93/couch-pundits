@@ -12,19 +12,29 @@ async def leaderboard():
         {"$match": {"points": {"$ne": None}}},
         {
             "$group": {
-                "_id": "$username",
+                "_id": "$account_id",
                 "total_points": {"$sum": "$points"},
                 "exact_count": {"$sum": {"$cond": [{"$eq": ["$points", 5]}, 1, 0]}},
                 "correct_count": {"$sum": {"$cond": [{"$eq": ["$points", 2]}, 1, 0]}},
                 "played": {"$sum": 1},
             }
         },
+        # Resolve the account's current username for display
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "_id",
+                "foreignField": "account_id",
+                "as": "user",
+            }
+        },
+        {"$set": {"username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]}}},
         {"$sort": {"total_points": -1}},
     ]
     results = await predictions_col().aggregate(pipeline).to_list(length=None)
     return [
         LeaderboardRow(
-            username=r["_id"],
+            username=r["username"],
             total_points=r["total_points"],
             exact_count=r["exact_count"],
             correct_count=r["correct_count"],

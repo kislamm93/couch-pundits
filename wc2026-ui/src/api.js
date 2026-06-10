@@ -1,4 +1,9 @@
-const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+// In production VITE_API_BASE is set explicitly. In dev, derive the API host
+// from whatever host loaded the page so it works over the LAN (e.g. a phone
+// hitting http://192.168.x.x:5173 will call http://192.168.x.x:8000).
+const BASE =
+  import.meta.env.VITE_API_BASE ||
+  `${window.location.protocol}//${window.location.hostname}:8000`
 
 function getToken() {
   return localStorage.getItem('wc_token')
@@ -13,7 +18,7 @@ async function request(path, options = {}) {
 
   if (res.status === 401) {
     window.dispatchEvent(new Event('wc:logout'))
-    throw new Error('Session expired')
+    throw new Error('Login Failed!')
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
@@ -22,10 +27,10 @@ async function request(path, options = {}) {
   return res.json()
 }
 
-export function register(username, password) {
+export function register(username, password, favoriteTeam) {
   return request('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, favorite_team: favoriteTeam }),
   })
 }
 
@@ -38,6 +43,23 @@ export function login(username, password) {
 
 export function getMe() {
   return request('/me')
+}
+
+export function saveTheme(theme) {
+  return request('/me/theme', {
+    method: 'PUT',
+    body: JSON.stringify({ theme }),
+  })
+}
+
+export function updateProfile({ username, favoriteTeam } = {}) {
+  const body = {}
+  if (username !== undefined) body.username = username
+  if (favoriteTeam !== undefined) body.favorite_team = favoriteTeam
+  return request('/me', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
 }
 
 export function getFixtures() {

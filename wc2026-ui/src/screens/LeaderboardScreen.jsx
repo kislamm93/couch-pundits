@@ -4,10 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import LeaderboardRow from '../components/LeaderboardRow'
 import Skeleton from '../components/Skeleton'
 import Toast from '../components/Toast'
+import ThemeToggle from '../components/ThemeToggle'
 
 const SCORING_RULES = [
-  { pts: 5, label: 'Exact score', desc: 'You got both goals right' },
-  { pts: 2, label: 'Correct outcome', desc: 'Right winner or draw, wrong score' },
+  { pts: 5, label: 'Exact score', desc: 'Both teams’ goals exactly right' },
+  { pts: 3, label: 'Correct goal difference', desc: 'Right winning margin — e.g. you said 2–1, it ends 3–2' },
+  { pts: 2, label: 'Correct outcome', desc: 'Right winner with the wrong score', note: 'A correctly predicted draw scores 2, not 3' },
   { pts: 0, label: 'Wrong outcome', desc: 'Incorrect result' },
 ]
 
@@ -34,15 +36,18 @@ export default function LeaderboardScreen() {
           <div>
             <h1 className="text-2xl font-black">Leaderboard</h1>
           </div>
-          <button
-            onClick={() => setRulesOpen(v => !v)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-muted border border-border rounded-full px-3 py-1.5 transition-colors hover:border-accent hover:text-accent"
-          >
-            Scoring
-            <svg className={`w-3 h-3 transition-transform ${rulesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setRulesOpen(v => !v)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted border border-border rounded-full px-3 py-1.5 transition-colors hover:border-accent hover:text-accent"
+            >
+              Scoring
+              <svg className={`w-3 h-3 transition-transform ${rulesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
 
         {rulesOpen && (
@@ -52,8 +57,11 @@ export default function LeaderboardScreen() {
                 <div>
                   <p className="text-sm font-semibold">{r.label}</p>
                   <p className="text-xs text-muted">{r.desc}</p>
+                  {r.note && (
+                    <p className="text-[11px] font-semibold text-accent mt-0.5">{r.note}</p>
+                  )}
                 </div>
-                <span className={`text-sm font-black flex-shrink-0 ${r.pts === 5 ? 'text-accent' : r.pts === 2 ? 'text-green-400' : 'text-muted'}`}>
+                <span className={`text-sm font-black flex-shrink-0 ${r.pts === 5 ? 'text-accent' : r.pts === 3 ? 'text-green-400' : r.pts === 2 ? 'text-sky-400' : 'text-muted'}`}>
                   {r.pts > 0 ? `+${r.pts} pts` : '0 pts'}
                 </span>
               </div>

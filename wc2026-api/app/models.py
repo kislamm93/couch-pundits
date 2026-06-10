@@ -1,10 +1,12 @@
+from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Literal, Optional
 
 
 class RegisterRequest(BaseModel):
     username: str
     password: str
+    favorite_team: str
 
 
 class LoginRequest(BaseModel):
@@ -15,10 +17,30 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    favorite_team: str = ""
 
 
 class MeResponse(BaseModel):
     username: str
+    theme: Literal["light", "dark"] = "dark"
+    favorite_team: str = ""
+
+
+class ThemeRequest(BaseModel):
+    theme: Literal["light", "dark"]
+
+
+class ProfileUpdateRequest(BaseModel):
+    username: Optional[str] = None
+    favorite_team: Optional[str] = None
+
+
+class ProfileResponse(BaseModel):
+    username: str
+    theme: Literal["light", "dark"] = "dark"
+    favorite_team: str = ""
+    # Reissued because the JWT subject (username) may have changed
+    access_token: str
 
 
 class FixtureResponse(BaseModel):
@@ -50,6 +72,7 @@ class PredictionResponse(BaseModel):
     pred_home: int
     pred_away: int
     points: Optional[int] = None
+    predicted_at: Optional[datetime] = None
 
 
 class LeaderboardRow(BaseModel):

@@ -30,9 +30,10 @@ def verify_password(password: str, stored: str) -> bool:
         return False
 
 
-def create_token(username: str) -> str:
+def create_token(account_id: str) -> str:
+    # Subject is the stable account id, so tokens survive username changes
     payload = {
-        "sub": username,
+        "sub": account_id,
         "exp": datetime.now(timezone.utc) + timedelta(days=30),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
@@ -45,16 +46,17 @@ async def require_admin(x_admin_key: str = Header(...)) -> None:
         raise HTTPException(status_code=403, detail="Invalid admin key")
 
 
-async def get_current_user(
+async def get_current_account(
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
 ) -> str:
+    """Return the authenticated user's stable account id (the JWT subject)."""
     try:
         payload = jwt.decode(
             credentials.credentials, settings.jwt_secret, algorithms=["HS256"]
         )
-        username: str = payload.get("sub")
-        if not username:
+        account_id: str = payload.get("sub")
+        if not account_id:
             raise HTTPException(status_code=401, detail="Invalid token")
-        return username
+        return account_id
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
