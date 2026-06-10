@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: couch-pundits-api
+    runtime: python
+    rootDir: wc2026-api
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MONGODB_URI
+        sync: false          # paste Atlas SRV URI in the dashboard
+      - key: DB_NAME
+        value: wc2026
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_KEY
+        generateValue: true  # Render generates; view it in the dashboard for Postman
+      - key: CORS_ORIGINS
+        sync: false          # set to the Vercel URL after the first UI deploy

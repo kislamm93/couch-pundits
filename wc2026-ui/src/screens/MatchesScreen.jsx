@@ -1,0 +1,152 @@
+import React, { useState, useEffect, useCallback } from 'react'
+import { getFixtures, getPredictionsMe } from '../api'
+import FilterBar from '../components/FilterBar'
+import FilterPanel from '../components/FilterPanel'
+import MatchCard from '../components/MatchCard'
+import Toast from '../components/Toast'
+import { MatchCardSkeleton } from '../components/Skeleton'
+
+function localDateStr(utcString) {
+  const d = new Date(utcString)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function localDateLabel(utcString) {
+  return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(utcString))
+}
+
+function groupByDate(fixtures) {
+  const map = new Map()
+  for (const f of fixtures) {
+    const label = localDateLabel(f.kickoff_utc)
+    if (!map.has(label)) map.set(label, [])
+    map.get(label).push(f)
+  }
+  return map
+}
+
+export default function MatchesScreen() {
+  const [fixtures, setFixtures] = useState([])
+  const [predMap, setPredMap] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({ date: null, group: 'All', team: '' })
+  const [hidePredicted, setHidePredicted] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const load = useCallback(async () => {
+    try {
+      const [fx, preds] = await Promise.all([getFixtures(), getPredictionsMe()])
+      setFixtures(fx)
+      const map = {}
+      for (const p of preds) map[p.match_id] = p
+      setPredMap(map)
+    } catch (err) {
+      setToast({ message: err.message, type: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  function todayStr() {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+
+  const todayActive = filters.date === todayStr()
+
+  function handleTodayClick() {
+    const today = todayStr()
+    setFilters(f => ({ ...f, date: f.date === today ? null : today }))
+  }
+
+  const filtered = fixtures.filter(f => {
+    if (filters.group !== 'All' && f.group !== filters.group) return false
+    if (filters.team && f.home_team !== filters.team && f.away_team !== filters.team) return false
+    if (filters.date && localDateStr(f.kickoff_utc) !== filters.date) return false
+    if (hidePredicted && predMap[f.match_id]) return false
+    return true
+  })
+  const grouped = groupByDate(filtered)
+
+  function handleClearFilter(key) {
+    setFilters(f => ({
+      ...f,
+      [key]: key === 'group' ? 'All' : key === 'date' ? null : '',
+    }))
+  }
+
+  function clearAll() {
+    setFilters({ date: null, group: 'All', team: '' })
+    setHidePredicted(false)
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
+      {panelOpen && (
+        <FilterPanel
+          fixtures={fixtures}
+          filters={filters}
+          onChange={setFilters}
+          onClose={() => setPanelOpen(false)}
+        />
+      )}
+
+      {/* Header */}
+      <div className="px-4 pt-safe pt-6 pb-2">
+        <h1 className="text-2xl font-black">World Cup 2026</h1>
+      </div>
+
+      <FilterBar
+        filters={filters}
+        onOpen={() => setPanelOpen(true)}
+        onClear={handleClearFilter}
+        hidePredicted={hidePredicted}
+        onToggleHidePredicted={() => setHidePredicted(v => !v)}
+        todayActive={todayActive}
+        onTodayClick={handleTodayClick}
+      />
+
+      {/* Match list */}
+      <div className="flex-1 overflow-y-auto scroll-momentum pb-28 px-4 space-y-4 mt-2">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <MatchCardSkeleton key={i} />)
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center mt-20 gap-3">
+            <p className="text-3xl">⚽</p>
+            <p className="text-muted text-sm">No matches for these filters.</p>
+            <button
+              onClick={clearAll}
+              className="text-accent text-sm font-semibold"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          Array.from(grouped.entries()).map(([dateLabel, dayFixtures]) => (
+            <div key={dateLabel}>
+              <p className="text-xs font-bold text-muted uppercase tracking-widest mb-2">{dateLabel}</p>
+              <div className="space-y-3">
+                {dayFixtures.map((f) => (
+                  <MatchCard
+                    key={f.match_id}
+                    fixture={f}
+                    prediction={predMap[f.match_id]}
+                    onSaved={() => {
+                      setToast({ message: 'Pick saved!', type: 'success' })
+                      load()
+                    }}
+                    onError={(msg) => setToast({ message: msg, type: 'error' })}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}

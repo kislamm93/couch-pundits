@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>World Cup 2026 - Leaderboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@400;700;800&amp;family=Archivo+Narrow:wght@400;600;700&amp;family=Hanken+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0B0E14;
+            color: #e1e2eb;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .leaderboard-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .leaderboard-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .rank-gradient-1 { background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0) 100%); }
+        .rank-gradient-2 { background: linear-gradient(135deg, rgba(192, 192, 192, 0.1) 0%, rgba(192, 192, 192, 0) 100%); }
+        .rank-gradient-3 { background: linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(205, 127, 50, 0) 100%); }
+    </style>
+<!-- Tailwind Config Verbatim -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#171c25",
+                    "tertiary-fixed-dim": "#c0c6d8",
+                    "primary-fixed-dim": "#11e37d",
+                    "background": "#10131a",
+                    "on-tertiary-fixed-variant": "#404755",
+                    "primary-container": "#00e07a",
+                    "secondary-container": "#444953",
+                    "on-primary-container": "#005d2f",
+                    "outline": "#859586",
+                    "surface-container-high": "#272a31",
+                    "tertiary-container": "#bcc3d4",
+                    "surface-variant": "#32353c",
+                    "inverse-on-surface": "#2e3037",
+                    "surface-container-highest": "#32353c",
+                    "error": "#ffb4ab",
+                    "surface-container-low": "#191c22",
+                    "primary-fixed": "#5eff9b",
+                    "on-secondary-fixed-variant": "#424751",
+                    "on-tertiary-fixed": "#151c28",
+                    "on-tertiary-container": "#49505f",
+                    "error-container": "#93000a",
+                    "primary": "#45fd93",
+                    "on-primary": "#00391a",
+                    "secondary": "#c2c6d3",
+                    "on-secondary": "#2c313a",
+                    "secondary-fixed-dim": "#c2c6d3",
+                    "surface-tint": "#11e37d",
+                    "on-tertiary": "#2a313e",
+                    "on-surface": "#e1e2eb",
+                    "surface-dim": "#10131a",
+                    "on-primary-fixed-variant": "#005229",
+                    "on-secondary-container": "#b4b8c5",
+                    "surface-bright": "#363940",
+                    "on-surface-variant": "#bacbba",
+                    "tertiary-fixed": "#dce2f4",
+                    "surface": "#10131a",
+                    "on-error": "#690005",
+                    "on-background": "#e1e2eb",
+                    "surface-container": "#1d2026",
+                    "tertiary": "#d8dff1",
+                    "on-primary-fixed": "#00210d",
+                    "inverse-primary": "#006d38",
+                    "outline-variant": "#3c4a3e",
+                    "on-error-container": "#ffdad6",
+                    "inverse-surface": "#e1e2eb",
+                    "surface-container-lowest": "#0b0e14",
+                    "secondary-fixed": "#dee2ef"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "gutter": "16px",
+                    "sm": "8px",
+                    "margin-mobile": "16px",
+                    "xs": "4px",
+                    "margin-desktop": "32px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "display-score": ["Archivo Narrow"],
+                    "label-caps": ["Archivo Narrow"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Anybody"],
+                    "headline-lg-mobile": ["Anybody"],
+                    "stats-numeral": ["Archivo Narrow"],
+                    "headline-lg": ["Anybody"],
+                    "body-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "display-score": ["48px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                    "stats-numeral": ["20px", {"lineHeight": "20px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-14 bg-background dark:bg-background">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="sports_soccer">sports_soccer</span>
+<div class="flex flex-col">
+<h1 class="text-headline-md font-headline-md font-extrabold tracking-tighter text-primary dark:text-primary leading-none">WORLD CUP 2026</h1>
+<p class="text-[10px] font-label-caps uppercase tracking-widest text-secondary opacity-70">Group Stage</p>
+</div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="search">search</button>
+</header>
+<!-- Main Content -->
+<main class="w-full max-w-[390px] pt-14 pb-20 flex flex-col">
+<!-- Header Section -->
+<div class="px-margin-mobile py-6">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Leaderboard</h2>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-label-caps font-label-caps text-secondary">LIVE STANDINGS</span>
+</div>
+</div>
+<!-- Leaderboard List -->
+<div class="flex flex-col gap-1 px-4 leaderboard-scroll">
+<!-- Rank 1 (Gold) -->
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/30 rank-gradient-1 mb-1">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-[#FFD700]">1</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-[#FFD700]/50 overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A stylized digital avatar of a professional gamer wearing a high-tech gaming headset. The avatar features vibrant neon lighting highlights in the hair and clothing, consistent with a modern sports gaming aesthetic. The background is a clean, dark obsidian, making the primary neon green and gold accents pop with a premium, broadcast-quality finish." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3qVVHBYtw1Va_8-dRkbYS0fqgS67VbQMDkIL1oVwAxMKRuCCiUqeGNVYdut6uNjIGPvcTOg1l2bzbRilcRVaoZq469SEfjhMs-QZ2N6Hv00O21daGiNKQqLZTJZ3OowQ8SF0I4knu49OXzVtGgmvlExjI4SE5q85UmiAt78LBaQvdkHTR85rNM25V8W98BOYE0ZyyNtS3oUhWdb1InUYIoE_ETBAutwdkwdq7kE1nxTR5DV1NrNr1xSCh1WFQ_in7e_l7DRgPY90"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-bold text-on-surface">@marcos_win</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-70">12 exact · 24 correct · 32 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container">156</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<!-- Rank 2 (Silver) -->
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/30 rank-gradient-2 mb-1">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-[#C0C0C0]">2</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-[#C0C0C0]/50 overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A stylized digital avatar of a female sports analyst with a sharp, modern haircut. The avatar is rendered in a minimalist, high-contrast digital art style with deep obsidian shadows and crisp, bright highlight lines. The overall mood is professional and high-performance, fitting the elite digital stadium aesthetic of a sports prediction platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHLOfK7Thc21HbppVzxAGxmv7UUanSCljs0VavZHkbD5yCBn85ZV5cWlFRLwjKgk0PZjnjaOjW6A-O2bAo4x2Tv-hsFCIZhkAYHOYcySq7eR-mGMgH1Shmgo0dOHUaDOaYqBdyBpMqdjeEdUnYORlkuDL3mL9QLDrRs7gCDxIJU7iPTNiMZNddrhKJAXIbVcMU60UGK0A-DQzQvglO8OKSW4xX_cg6SnqspzTTSxH97wwdPLbYIUqUgDeYF0PaLIEA6bM9BgiXwVA"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-bold text-on-surface">@goal_hunter</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-70">9 exact · 21 correct · 32 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container">142</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<!-- Rank 3 (Bronze) -->
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/30 rank-gradient-3 mb-1">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-[#CD7F32]">3</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-[#CD7F32]/50 overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A digital portrait of a sports enthusiast with a vibrant, modern aesthetic. The lighting is dramatic, coming from the side with a strong neon green tint, creating high-contrast depth against the dark, sleek background. The visual style is crisp and authoritative, mimicking the high-speed energy of a live World Cup broadcast interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7A7kABFX3OsrxadnnFkAZ8VXKCHudQbZrEFo1PtZaXlFlHhhWs9LQIZnOZg9j0TZ5n0t4U3O3LCMtV3SP7NPdW8rgbBSkgQPOWO0TQLyKE-u-ll0JyDVSUFWf7wusHR1MvyrCc44A0VpBYrx3E3SSV0R2bjSR-ddP31txgDbK61JkCpWn1F0gvHhkw-g7m-aMrR4mb3OZ4TvLpOFHwyxmcoK7gLpsqilbD8efIuMGt2MQq_qb18DOHOC4AZvHHRWs1z9ciFae3E0"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-bold text-on-surface">@felipe_pro</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-70">8 exact · 19 correct · 30 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container">138</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<!-- User Row (Highlighted) -->
+<div class="relative flex items-center p-3 rounded-lg border-l-4 border-l-primary-container bg-primary-container/10 border border-outline-variant/30 my-2 shadow-[0_0_20px_rgba(0,224,122,0.1)]">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-primary-container">24</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-container/20 border border-primary-container/50 overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A custom digital avatar representing the user, Alex, in a high-tech sports environment. The design features sharp, geometric lines and a color palette dominated by deep blacks and neon greens. The background is a sophisticated digital canvas with subtle glowing patterns, conveying a sense of precision and competitive adrenaline in a modern digital stadium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfTf7dKK0p0XkA-YB33h1uVsuJ53uV3rKDF90iHZvatfHFnPQQz5GYNVK_8AoWg58OaT1CrZ896u_UplQBrosZYRgotiu8UNh9JB4J420NR-D-rJzk57HbT9vOegnir4ogPHniyu4WNlxeKz0H8tsdNJ0KBePLmEDJojxyDByC7zBRCNYR6MhuxGN0-wRzlFyzJfBsnzdUguoyIVURC7wtc2I-v0R_BqZOZftnsbaF9sR7d5C1GL0xppns3etg5AvqFnz-yZmeeAM"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-bold text-primary-container">@alex (You)</p>
+<p class="text-label-caps font-label-caps text-on-surface-variant font-medium">4 exact · 9 correct · 18 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container">64</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<!-- Standard Rows -->
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/10 bg-surface-container-low/30 mb-1 opacity-90">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-secondary">4</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A minimalist digital avatar of a sports fan in a sleek dark mode theme. The character design is clean and structured with subtle neon green accents in the clothing. The lighting is soft yet high-contrast, creating a professional and modern look that integrates seamlessly into a high-performance sports leaderboard UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiRQWvgEccXdgzwAtBuMKQ8i8xJh7R_zVPETor5ZYZjQVzjZ-4zCeSyDhiRRK01575f5bHL7UhvjgNXoFMnGy16yol4rS9eQKbFi0z7rQqfveh736T43vhVxKGlsj0lqKve8Bsnbx-zzb4gZ-wGno_opf7a_KfqoIBiZkDlxnhUgdNrqk2Ay42dLPyyWGkvzWHMCJAHLVBjmMeH9ZRtl_KjLSXvR-B5AR2ngJPGCByxZvwO5oeNyeXTQBQULTeDM9DKfKPUIHty6c"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-medium text-on-surface">@elena_k</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-60">7 exact · 18 correct · 32 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container/80">131</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/10 bg-surface-container-low/30 mb-1 opacity-90">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-secondary">5</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A stylized digital profile picture of a competitive player. The avatar is set against a dark obsidian background with glowing geometric textures. The character features a modern, clean design with vibrant neon accents that represent high speed and precision, fitting the electric personality of the World Cup 2026 digital brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4HYdqemubJh8cm5teLpdMHez-DdSwWNuhFRjj3UcUHp3A-4XTMPh0mqxJtRPqsjdkantlnWLR7KUtVIfzMWTzeC4l3EVcuDZNM9J7ffb13a-ROU-ZR2KjyjPq-woU49bTbD0eEJ1K3AFa2G2HMbPFK1DAwfN0orx7uomUatLCC6J2II7-1gSJNNBInqMzXvBvEciTMqXw-M_yC19l9NaXgW19Ve1t3eBt38DzrZ86I61-Fl7kPIwtJuwPlQLMYSZds9V3qRGIQBU"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-medium text-on-surface">@james_fc</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-60">6 exact · 17 correct · 31 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container/80">128</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/10 bg-surface-container-low/30 mb-1 opacity-80">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-secondary">6</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A digital avatar of a female sports fan with a modern aesthetic, characterized by sharp lines and high-contrast colors. The design features a deep black backdrop with intense neon green highlights. The character's style is minimalist yet technologically advanced, echoing the premium and authoritative nature of a global sports platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxnPSsXQMhUwq20sHfEKrZ97W0vYMmMOi-soZ9KXlH-q0KVvRNacKYwDR7sNG62nwEdeCsAPaZp7I963gCDMu6p0gN-H52gLOoktxL_fBtSBPuZhZT7-fcAQV7p0o2YWXOog8Lv0mDMUOXBGDe7AQXd4jznmvISRQLlXr9xk8HCPzAm0UniNfvwsibaSFJ17MfSchFgLIKuRLLMZqoGTsP--pIvJh7s0SC3Xg8IvZQZXPvfiujJruogVSlioy1GQapCoMnsEVRMRQ"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-medium text-on-surface">@chloe_s</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-60">5 exact · 16 correct · 28 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container/80">112</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<div class="flex items-center p-3 rounded-lg border border-outline-variant/10 bg-surface-container-low/30 mb-1 opacity-70">
+<div class="w-8 flex justify-center items-center">
+<span class="font-stats-numeral text-stats-numeral text-secondary">7</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden mr-3">
+<img class="w-full h-full object-cover" data-alt="A stylized avatar of a sports analyst, presenting a sharp and authoritative look. The digital portrait is rendered with a dark mode color palette, where deep blacks are contrasted by vibrant electric green details. The background is a clean, minimalist gallery space with soft, technological lighting that highlights the avatar's sophisticated design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJKU01CdSeXE2anzZYHrSERUc5U-SHGs6RMBKW4dOVQ_HFIYGyx02CoAoN3k7iE0_omYAVG5INBaK1FT_5ct6cB2YwrbvRmMN0-zJVccKJ7Ak92zHg5y4z39dfe9lVVLq0UmvzL0KPp2RaZrXRCDVqIkuDh2nWogk8MAcYvXBLX712kF_iWTmjzkoaMMnKrwHXrjyxplLsaOc0vK-dnurLn-SJlQXsNTHcHplcdIbCQPVKWQJ6SyfgpKW0eSzEc2drCbbLlsiFPi4"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md font-medium text-on-surface">@dave_tips</p>
+<p class="text-label-caps font-label-caps text-secondary opacity-60">5 exact · 14 correct · 32 played</p>
+</div>
+<div class="text-right">
+<p class="font-display-score text-stats-numeral text-primary-container/80">104</p>
+<p class="text-[10px] font-label-caps text-secondary">PTS</p>
+</div>
+</div>
+<!-- More rows could follow... -->
+<div class="flex justify-center py-4">
+<span class="text-label-caps font-label-caps text-secondary/40">Showing top 100 players</span>
+</div>
+<!-- Empty State (Hidden) -->
+<div class="hidden flex-col items-center justify-center py-12 text-center" id="empty-state">
+<span class="material-symbols-outlined text-4xl text-secondary/30 mb-4" data-icon="leaderboard">leaderboard</span>
+<p class="font-body-md text-secondary">No results in yet</p>
+<p class="text-label-caps text-secondary/50 mt-1">Predictions are still being calculated</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-margin-mobile pb-safe h-16 bg-background/80 dark:bg-background/80 backdrop-blur-md border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="text-label-caps font-label-caps">Matches</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary font-bold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="text-label-caps font-label-caps">Leaderboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-label-caps font-label-caps">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction: Scroll highlight for TopAppBar
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 20) {
+                header.classList.add('bg-background/95', 'backdrop-blur-sm', 'shadow-md');
+            } else {
+                header.classList.remove('bg-background/95', 'backdrop-blur-sm', 'shadow-md');
+            }
+        });
+
+        // Simple function to demonstrate empty state toggle if needed
+        function toggleEmptyState(show) {
+            const list = document.querySelector('.leaderboard-scroll');
+            const empty = document.getElementById('empty-state');
+            if (show) {
+                list.classList.add('hidden');
+                empty.classList.remove('hidden');
+            } else {
+                list.classList.remove('hidden');
+                empty.classList.add('hidden');
+            }
+        }
+    </script>
+</body></html>

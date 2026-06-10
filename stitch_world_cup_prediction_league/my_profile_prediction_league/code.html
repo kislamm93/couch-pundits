@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&amp;family=Archivo+Narrow:wght@600;700&amp;family=Hanken+Grotesk:wght@400&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@100..900&amp;family=Archivo+Narrow:wght@100..900&amp;family=Hanken+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#171c25",
+                    "tertiary-fixed-dim": "#c0c6d8",
+                    "primary-fixed-dim": "#11e37d",
+                    "background": "#10131a",
+                    "on-tertiary-fixed-variant": "#404755",
+                    "primary-container": "#00e07a",
+                    "secondary-container": "#444953",
+                    "on-primary-container": "#005d2f",
+                    "outline": "#859586",
+                    "surface-container-high": "#272a31",
+                    "tertiary-container": "#bcc3d4",
+                    "surface-variant": "#32353c",
+                    "inverse-on-surface": "#2e3037",
+                    "surface-container-highest": "#32353c",
+                    "error": "#ffb4ab",
+                    "surface-container-low": "#191c22",
+                    "primary-fixed": "#5eff9b",
+                    "on-secondary-fixed-variant": "#424751",
+                    "on-tertiary-fixed": "#151c28",
+                    "on-tertiary-container": "#49505f",
+                    "error-container": "#93000a",
+                    "primary": "#45fd93",
+                    "on-primary": "#00391a",
+                    "secondary": "#c2c6d3",
+                    "on-secondary": "#2c313a",
+                    "secondary-fixed-dim": "#c2c6d3",
+                    "surface-tint": "#11e37d",
+                    "on-tertiary": "#2a313e",
+                    "on-surface": "#e1e2eb",
+                    "surface-dim": "#10131a",
+                    "on-primary-fixed-variant": "#005229",
+                    "on-secondary-container": "#b4b8c5",
+                    "surface-bright": "#363940",
+                    "on-surface-variant": "#bacbba",
+                    "tertiary-fixed": "#dce2f4",
+                    "surface": "#10131a",
+                    "on-error": "#690005",
+                    "on-background": "#e1e2eb",
+                    "surface-container": "#1d2026",
+                    "tertiary": "#d8dff1",
+                    "on-primary-fixed": "#00210d",
+                    "inverse-primary": "#006d38",
+                    "outline-variant": "#3c4a3e",
+                    "on-error-container": "#ffdad6",
+                    "inverse-surface": "#e1e2eb",
+                    "surface-container-lowest": "#0b0e14",
+                    "secondary-fixed": "#dee2ef"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "gutter": "16px",
+                    "sm": "8px",
+                    "margin-mobile": "16px",
+                    "xs": "4px",
+                    "margin-desktop": "32px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "display-score": ["Archivo Narrow"],
+                    "label-caps": ["Archivo Narrow"],
+                    "body-md": ["Hanken Grotesk"],
+                    "headline-md": ["Anybody"],
+                    "headline-lg-mobile": ["Anybody"],
+                    "stats-numeral": ["Archivo Narrow"],
+                    "headline-lg": ["Anybody"],
+                    "body-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "display-score": ["48px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                    "stats-numeral": ["20px", {"lineHeight": "20px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "26px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b0e14;
+            color: #e1e2eb;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .stats-card-gradient {
+            background: linear-gradient(145deg, #151a23 0%, #10131a 100%);
+        }
+        .glass-nav {
+            background: rgba(11, 14, 20, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md pb-24 overflow-x-hidden">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-14 bg-background dark:bg-background">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="sports_soccer">sports_soccer</span>
+<h1 class="text-headline-md font-headline-md font-extrabold tracking-tighter text-primary">@alex</h1>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Profile Avatar" class="w-full h-full object-cover" data-alt="A detailed digital illustration of a stylized, modern avatar character for a sports enthusiast. The character has short dark hair, a confident expression, and is wearing a sleek jersey in neon green and obsidian black colors. The style is clean, vector-based, and fits into a high-performance sports app aesthetic with a dark mode background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvPolS5l-w9TPc0IuX5dHaZ-LyeIC3x6YqtmEMrGMN7nO8KOI-KStJCPsM_eihAl2hEkGJvrdFyvQ_FDBfq4mxeD31NyR-crPqY1dC0Isc-3Ygl0T-ebQi63M6VVNDDkkZB4vrPJh3IY60AErbtpfhtUZ34p9ornZRnHmVwXKCCs4vwf2RZdxLQdxoX_tRyhfLoQf6gUjEdv7XCvDh4ADeF7LXqPRLGjpFKAU4wID6tGGKMc3Ly86opWpJorAYau454BbSMKIog7I"/>
+</div>
+</nav>
+<main class="pt-20 px-margin-mobile space-y-6">
+<!-- Header / Hero Section -->
+<header class="flex flex-col items-center text-center space-y-2">
+<div class="relative">
+<div class="w-24 h-24 rounded-full border-4 border-primary-container p-1 shadow-lg shadow-primary-container/20">
+<img alt="Alex Profile" class="w-full h-full rounded-full bg-surface-container-high" data-alt="A vibrant and crisp digital avatar icon representing a professional athlete or high-tier gamer. The character is set against a dark, tech-focused background with subtle electric green highlights. The lighting is dramatic, emphasizing the sleek lines of the modern sports gear the character is wearing, matching the World Cup 2026 digital identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRx2_I03frZmhHF9cmq0H3HQbV2Aj26zMteV0PW3gb2C7PU_Vrw5xjd8qVb_YaluhieFcrBnyRQtOAZLGIvqyV4B1PsVeoF2awitXNtNMPe2I7fUtndwqxFui-27dJwuayPbcHKDQQNvLLWNTnnE_lF9kUXrNom1980aT1m7g46w6WyBCVIlgqoxDqNKfo2maFGu8Vo9GM3hi6MqbN4T6dxYZizhzibVaLvqNmBm_xysl_qF25oCaoH0afQpxEEyp2ZZ6J3ufcIpU"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary-container text-on-primary-container w-7 h-7 rounded-full flex items-center justify-center border-2 border-background">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="pt-2">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile">Alex Thompson</h2>
+<p class="text-on-surface-variant font-label-caps text-label-caps tracking-widest">RANK #1,240 WORLDWIDE</p>
+</div>
+</header>
+<!-- Stats Card -->
+<section class="stats-card-gradient border border-outline-variant rounded-xl p-gutter grid grid-cols-3 divide-x divide-outline-variant">
+<div class="flex flex-col items-center justify-center px-2">
+<span class="font-display-score text-[32px] text-primary-container">1,450</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant text-center leading-tight">TOTAL POINTS</span>
+</div>
+<div class="flex flex-col items-center justify-center px-2">
+<span class="font-display-score text-[32px] text-on-surface">14</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant text-center leading-tight">EXACT HITS</span>
+</div>
+<div class="flex flex-col items-center justify-center px-2">
+<span class="font-display-score text-[32px] text-on-surface">42</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant text-center leading-tight">CORRECT OUTCOMES</span>
+</div>
+</section>
+<!-- My Predictions List -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h3 class="font-headline-md text-headline-md">My predictions</h3>
+<span class="text-primary font-label-caps text-label-caps">VIEW ALL</span>
+</div>
+<div class="space-y-3">
+<!-- Prediction Row 1 -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-md flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<img alt="USA" class="w-6 h-4 object-cover rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7f1FoIWuBPuUCahvPPhvR5CWWulm9jPsPhpOghgeXIWy4AYLap43W2LX9yyPCf3Cebdqa3o2YfrH0dtdkLZNiHcG1ogzyEdbnPA1eS_CG4GEBDEiBGMh4lXK-3uzQFzwvCQAa0hK0_v512qnz-QBHhv2LHJfVQfB2QkkVZQCvSt1tO6LAisFLgCvTIUichfQxfROjXoz09qmk0jIXnK9LZ7oFO0hIQk55ui9O0ETiuUulNXyCUQdZ6YC-zWIOEN7MdIPK64CZkX8"/>
+<span class="font-label-caps text-on-surface">USA</span>
+</div>
+<div class="flex items-center gap-2">
+<img alt="Mexico" class="w-6 h-4 object-cover rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-zHax3ABxYK9RWY-xJzdszfj9nhBmnEULpUOBPYQ_4lr7GqCZ9H1v5C0N1udnpam2Usif7UIl-zNT2TpXLKCDMe-peRwbp_cO4iBB-cuSYlYY5uvIaBVY8Tn8m33SzKEthCBus0qOkur1zux6BH7DVnT_Lc7m47Wa_wTyPS3CcuRKgEc8y929mT96ZYN_EtObs6kVaRqTScln31uZu7Cj-F09EWr_fWNnnvH8CKeh0w5-NdDfhhNw0ojIt7G3o8sXcrT9XJH7VOU"/>
+<span class="font-label-caps text-on-surface">MEX</span>
+</div>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col items-center">
+<span class="font-stats-numeral text-stats-numeral text-on-surface">2 - 1</span>
+<span class="text-[10px] text-on-surface-variant font-label-caps">YOUR SCORE</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-primary-container font-stats-numeral text-stats-numeral">+5</span>
+<span class="text-[10px] text-on-surface-variant font-label-caps">EXACT HIT</span>
+</div>
+</div>
+<!-- Prediction Row 2 -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-md flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<img alt="Brazil" class="w-6 h-4 object-cover rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqciO4zv0zbyr81QdvUiaZEWd5cK_A2OsRDNa6PcCkqYitA63yqw521madabEpzFXXzp3yHRSqTo3B990VjFST8D04PXfgcDwPXRI0qH824yjNPdBvc5qzeNzhXeGl1bevCMmeQ3OwEdN-c-0VLoZpmQjVzhIbj2C-M0oEj_UwUAkln_x1Sq42nkiRtKeInqGoZ1GJD4luC6cu8_xm32pYqPBAsLPuhQHfH-mVy1hEtRAlYbps8dF5NA8toiBq5BibtWsb71kW0f0"/>
+<span class="font-label-caps text-on-surface">BRA</span>
+</div>
+<div class="flex items-center gap-2">
+<img alt="France" class="w-6 h-4 object-cover rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8kew-degozSdfPpSnxihr-8uLpZnGLFUfLinDiGPFO41_QsQx0AIsoPY8ZW2Y8PN-dRSC6IUUEDsAclLEPgkVad9IOmDUrrBeZ4_K5CxXFb2gzNW0UwUEJBpyrIx45jM5EDhUrKJhT-VzG-PNtyUw2fFJu9ig0M2Xrl48I1QzxgWUc5FReH-U7a3phneTDZuXd3V4x1Lo4O6zmOR0t2Rl-m4gm63nPq056glUNvfrlfG7riZK87s61YXgLOaph9Hk0a59jsPKZAw"/>
+<span class="font-label-caps text-on-surface">FRA</span>
+</div>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col items-center">
+<span class="font-stats-numeral text-stats-numeral text-on-surface">3 - 1</span>
+<span class="text-[10px] text-on-surface-variant font-label-caps">YOUR SCORE</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-primary-container font-stats-numeral text-stats-numeral">+2</span>
+<span class="text-[10px] text-on-surface-variant font-label-caps">OUTCOME</span>
+</div>
+</div>
+<!-- Prediction Row 3 (Pending) -->
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-md flex items-center justify-between opacity-80">
+<div class="flex items-center gap-4">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<img alt="Argentina" class="w-6 h-4 object-cover rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClN24t7zpyu7WPLmTZv1VF0AVdWNv-UM96aHtjfGNcdw4EfGruX0n5eX1M-DJbINpDVrGM7lZ2WRq5piSizeyMib2bN_LkaebOZBykUCa5_eZDwXBhSxxSDnndnZSctxWgjLS5fWsueXhr7Ks3SBRoxPziq-vnUPWfSVbjldb6oOlgCO31ESBVD64NI3ramCk9THERvW_coD5t2HS8kFvRad-CMf-BKaVYB0d9RIHrdJai2CV0t7Ep24HgW6V3xyiVD0mMmYuLrXQ"/>
+<span class="font-label-caps text-on-surface">ARG</span>
+</div>
+<div class="flex items-center gap-2">
+<img alt="Spain" class="w-6 h-4 object-cover rounded-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKdELqwZmQqcLuW4ypEdd14TYx9681lxFbemlA6m_KsHmLAKvFBrx9B2EpVVyWhxHP4VdkfSOaoCSw1ABgml3QG9nUH6WSKuHOG8R4Y_QiGyfRC1ohuyVEFdbb4P2eKLFDQydi3IgiYM9dJAt9RY6ShDp0hqZrrQ9O2gRY49-4otSl2PG7K8IqQU6Qs4ZoM_djgYIXkxGgJT_5ZrKyWhPtCp1C29vueSsFkkOhHAhWJCAGo6JIVmBynHBJE3a2as67w75xEq4p1r8"/>
+<span class="font-label-caps text-on-surface">ESP</span>
+</div>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex flex-col items-center">
+<span class="font-stats-numeral text-stats-numeral text-on-surface">1 - 1</span>
+<span class="text-[10px] text-on-surface-variant font-label-caps">YOUR SCORE</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-on-surface-variant font-stats-numeral text-stats-numeral italic">Pending</span>
+<span class="text-[10px] text-on-surface-variant font-label-caps">LIVE MATCH</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Logout Action -->
+<div class="pt-8 pb-4">
+<button class="w-full h-12 rounded-lg border border-outline-variant text-on-surface font-label-caps flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+                Log out
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-margin-mobile pb-safe h-16 border-t border-outline-variant bg-background/80 backdrop-blur-md shadow-lg">
+<a class="flex flex-col items-center justify-center text-secondary opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="text-label-caps font-label-caps">Matches</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary opacity-60 hover:opacity-100 transition-opacity" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="text-label-caps font-label-caps">Leaderboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="text-label-caps font-label-caps">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for rows
+        document.querySelectorAll('.bg-surface-container-low').forEach(row => {
+            row.addEventListener('touchstart', () => {
+                row.classList.add('scale-[0.98]', 'bg-surface-container-high');
+                row.classList.remove('bg-surface-container-low');
+            });
+            row.addEventListener('touchend', () => {
+                row.classList.remove('scale-[0.98]', 'bg-surface-container-high');
+                row.classList.add('bg-surface-container-low');
+            });
+        });
+    </script>
+</body></html>

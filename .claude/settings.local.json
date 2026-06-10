@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.groups.json\" -o /tmp/worldcup.groups.json)",
+      "Read(//tmp/**)",
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 -c ' *)",
+      "Bash(npm run *)",
+      "Bash(rm -rf node_modules)",
+      "Bash(npm install *)",
+      "Bash(npx vite *)",
+      "Bash(node_modules/.bin/vite build *)",
+      "Bash(node -e \"console.log\\(process.platform, process.arch\\)\")",
+      "Bash(npm_config_platform=darwin npm_config_arch=x64 npm install)",
+      "Bash(kill %%)",
+      "Bash(.venv/bin/python -c ' *)",
+      "Bash(timeout 8 docker info)",
+      "Bash(npm ci *)",
+      "Bash(VITE_BASE=/wc2026-project/ VITE_API_BASE=https://wc2026-api.onrender.com npm run build)"
+    ]
+  }
+}

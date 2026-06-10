@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    command: mongod --quiet --setParameter logComponentVerbosity='{network:{verbosity:0},command:{verbosity:0}}'
+    logging:
+      driver: "none"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: wc2026-api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      DB_NAME: wc2026
+      JWT_SECRET: local-dev-secret-change-me
+      ADMIN_KEY: local-admin-key
+      CORS_ORIGINS: http://localhost:5173
+    volumes:
+      - ./wc2026-api/app:/app/app
+      - ./wc2026-api/scripts:/app/scripts
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app
+
+  ui:
+    build: ./wc2026-ui
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./wc2026-ui/src:/app/src
+      - ./wc2026-ui/index.html:/app/index.html
+      - ./wc2026-ui/tailwind.config.js:/app/tailwind.config.js
+      - ./wc2026-ui/postcss.config.js:/app/postcss.config.js
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
