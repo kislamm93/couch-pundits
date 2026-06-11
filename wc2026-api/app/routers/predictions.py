@@ -1,11 +1,13 @@
+import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from app.models import PredictionRequest, PredictionResponse
-from app.db import fixtures_col, predictions_col
+from app.db import fixtures_col, predictions_col, users_col
 from app.security import get_current_account
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
+logger = logging.getLogger("uvicorn.error")
 
 
 @router.get("/me", response_model=List[PredictionResponse])
@@ -45,6 +47,19 @@ async def upsert_prediction(
         },
         upsert=True,
     )
+
+    user = await users_col().find_one({"account_id": account_id})
+    username = (user or {}).get("username", account_id)
+    logger.info(
+        "PREDICTION user=%s match=%s (%s vs %s) pick=%s-%s",
+        username,
+        match_id,
+        fixture["home_team"],
+        fixture["away_team"],
+        body.pred_home,
+        body.pred_away,
+    )
+
     return PredictionResponse(
         match_id=match_id, pred_home=body.pred_home, pred_away=body.pred_away
     )

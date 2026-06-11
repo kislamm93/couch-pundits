@@ -26,7 +26,8 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('fixtures:', len\\(d\\)\\); teams=set\\(\\); [ \\(teams.add\\(f['home_team']\\), teams.add\\(f['away_team']\\)\\) for f in d]; print\\('teams:', len\\(teams\\)\\)\")",
       "Bash(ipconfig getifaddr *)",
       "Bash(sed -n '8,13p;48,62p' screens/LeaderboardScreen.jsx)",
-      "Bash(sed -n '/function PointsBadge/,/^}/p' components/MatchCard.jsx)"
+      "Bash(sed -n '/function PointsBadge/,/^}/p' components/MatchCard.jsx)",
+      "Bash(python3 -m py_compile app/routers/predictions.py)"
     ]
   }
 }
