@@ -20,6 +20,10 @@ def predictions_col():
     return get_db()["predictions"]
 
 
+def leagues_col():
+    return get_db()["leagues"]
+
+
 async def connect_db():
     global _client
     _client = AsyncIOMotorClient(settings.mongodb_uri)
@@ -30,6 +34,7 @@ async def connect_db():
         await predictions_col().create_index(
             [("account_id", 1), ("match_id", 1)], unique=True
         )
+        await leagues_col().create_index("name", unique=True)
         print("MongoDB connected and indexes ensured.")
     except Exception as exc:
         print(f"WARNING: MongoDB not reachable on startup — {exc}")

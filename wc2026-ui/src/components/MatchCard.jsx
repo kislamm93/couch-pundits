@@ -70,7 +70,9 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
     if (picks === null) {
       setPicksLoading(true)
       try {
-        setPicks(await getMatchPredictions(fixture.match_id))
+        // Response is [{league_name, picks}] — filter out empty groups
+        const groups = await getMatchPredictions(fixture.match_id)
+        setPicks(groups.filter((g) => g.picks.length > 0))
       } catch {
         setPicks([])
       } finally {
@@ -225,27 +227,42 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
               ) : !picks || picks.length === 0 ? (
                 <p className="text-xs text-muted text-center py-1">No predictions for this match.</p>
               ) : (
-                picks.map((p) => {
-                  const isMe = p.username === auth?.username
-                  const scored = p.points !== null && p.points !== undefined
-                  return (
-                    <div key={p.username} className="flex items-center justify-between gap-2 text-sm">
-                      <span className={`truncate flex-1 ${isMe ? 'text-accent font-semibold' : ''}`}>
-                        {p.username}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
-                      </span>
-                      <span className="font-bold tabular-nums text-muted flex-shrink-0">
-                        {p.pred_home}–{p.pred_away}
-                      </span>
-                      {scored ? (
-                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
-                          +{p.points}
+                picks.map((group, gi) => (
+                  <div key={group.league_name || 'default'}>
+                    {group.league_name && (
+                      <div className={`flex items-center gap-2 ${gi > 0 ? 'mt-3' : 'mb-1'}`}>
+                        {gi > 0 && <div className="flex-1 h-px bg-border" />}
+                        <span className="text-[10px] font-semibold text-muted uppercase tracking-wider flex-shrink-0">
+                          {group.league_name}
                         </span>
-                      ) : (
-                        <span className="text-xs font-semibold text-yellow-400 flex-shrink-0">pending</span>
-                      )}
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
+                    )}
+                    <div className="space-y-1.5">
+                      {group.picks.map((p) => {
+                        const isMe = p.username === auth?.username
+                        const scored = p.points !== null && p.points !== undefined
+                        return (
+                          <div key={p.username} className="flex items-center justify-between gap-2 text-sm">
+                            <span className={`truncate flex-1 ${isMe ? 'text-accent font-semibold' : ''}`}>
+                              {p.username}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
+                            </span>
+                            <span className="font-bold tabular-nums text-muted flex-shrink-0">
+                              {p.pred_home}–{p.pred_away}
+                            </span>
+                            {scored ? (
+                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
+                                +{p.points}
+                              </span>
+                            ) : (
+                              <span className="text-xs font-semibold text-yellow-400 flex-shrink-0">pending</span>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                })
+                  </div>
+                ))
               )}
             </div>
           )}

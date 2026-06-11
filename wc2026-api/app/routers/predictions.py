@@ -2,8 +2,8 @@ import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
-from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow, AdminMatchPredictionRow
-from app.db import fixtures_col, predictions_col, users_col
+from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow, AdminMatchPredictionRow, LeaguePicksGroup
+from app.db import fixtures_col, predictions_col, users_col, leagues_col
 from app.security import get_current_account, require_admin
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
@@ -16,7 +16,7 @@ async def my_predictions(account_id: str = Depends(get_current_account)):
     return await cursor.to_list(length=None)
 
 
-@router.get("/match/{match_id}", response_model=List[MatchPredictionRow])
+@router.get("/match/{match_id}", response_model=List[LeaguePicksGroup])
 async def match_predictions(
     match_id: int, account_id: str = Depends(get_current_account)
 ):
@@ -26,22 +26,31 @@ async def match_predictions(
         raise HTTPException(status_code=404, detail="Match not found")
     kickoff = datetime.fromisoformat(fixture["kickoff_utc"].replace("Z", "+00:00"))
     if datetime.now(timezone.utc) < kickoff:
-        raise HTTPException(
-            status_code=403, detail="Picks are revealed after kickoff"
-        )
+        raise HTTPException(status_code=403, detail="Picks are revealed after kickoff")
 
+    user_leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
+
+    if not user_leagues:
+        # Not in any league — show everyone in a single unlabelled group
+        return [LeaguePicksGroup(league_name="", picks=await _fetch_picks(match_id, None))]
+
+    return [
+        LeaguePicksGroup(
+            league_name=league["name"],
+            picks=await _fetch_picks(match_id, league["member_account_ids"]),
+        )
+        for league in user_leagues
+    ]
+
+
+async def _fetch_picks(match_id: int, member_ids) -> List[MatchPredictionRow]:
+    match_filter: dict = {"match_id": match_id}
+    if member_ids is not None:
+        match_filter["account_id"] = {"$in": member_ids}
     pipeline = [
-        {"$match": {"match_id": match_id}},
-        {
-            "$lookup": {
-                "from": "users",
-                "localField": "account_id",
-                "foreignField": "account_id",
-                "as": "user",
-            }
-        },
+        {"$match": match_filter},
+        {"$lookup": {"from": "users", "localField": "account_id", "foreignField": "account_id", "as": "user"}},
         {"$set": {"username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]}}},
-        # Highest scorers first, then by name for stable ordering
         {"$sort": {"points": -1, "username": 1}},
     ]
     rows = await predictions_col().aggregate(pipeline).to_list(length=None)

@@ -10,7 +10,7 @@ from app.db import users_col, fixtures_col
 from app.security import get_current_account, create_token
 from app.models import MeResponse, ThemeRequest, ProfileUpdateRequest, ProfileResponse
 from app.seed import seed_if_empty
-from app.routers import auth, fixtures, predictions, leaderboard, results
+from app.routers import auth, fixtures, predictions, leaderboard, results, leagues
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -49,6 +49,7 @@ app.include_router(fixtures.router)
 app.include_router(predictions.router)
 app.include_router(leaderboard.router)
 app.include_router(results.router)
+app.include_router(leagues.router)
 
 
 @app.api_route("/health", methods=["GET", "HEAD"], tags=["health"])

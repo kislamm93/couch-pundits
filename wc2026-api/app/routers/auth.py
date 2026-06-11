@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 from app.models import RegisterRequest, LoginRequest, TokenResponse
-from app.db import users_col, fixtures_col
+from app.db import users_col, fixtures_col, leagues_col
 from app.security import hash_password, verify_password, create_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -35,6 +35,10 @@ async def register(body: RegisterRequest):
             "favorite_team": favorite_team,
             "created_at": datetime.now(timezone.utc),
         }
+    )
+    await leagues_col().update_one(
+        {"name": "PredictionLeague"},
+        {"$addToSet": {"member_account_ids": account_id}},
     )
     return TokenResponse(access_token=create_token(account_id), favorite_team=favorite_team)
 

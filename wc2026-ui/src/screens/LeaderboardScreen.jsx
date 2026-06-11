@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getLeaderboard } from '../api'
+import { getLeaderboard, getMyLeagues } from '../api'
 import { useAuth } from '../context/AuthContext'
 import LeaderboardRow from '../components/LeaderboardRow'
 import Skeleton from '../components/Skeleton'
@@ -8,7 +8,7 @@ import ThemeToggle from '../components/ThemeToggle'
 import { pointTextClass } from '../scoring'
 
 const SCORING_RULES = [
-  { pts: 5, label: 'Exact score', desc: 'Both teams’ goals exactly right' },
+  { pts: 5, label: 'Exact score', desc: 'Both teams\' goals exactly right' },
   { pts: 3, label: 'Correct goal difference', desc: 'Right winning margin — e.g. you said 2–1, it ends 3–2' },
   { pts: 2, label: 'Correct outcome', desc: 'Right winner with the wrong score', note: 'A correctly predicted draw scores 2, not 3' },
   { pts: 0, label: 'Wrong outcome', desc: 'Incorrect result' },
@@ -20,13 +20,20 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = useState(true)
   const [rulesOpen, setRulesOpen] = useState(false)
   const [toast, setToast] = useState(null)
+  const [leagues, setLeagues] = useState([])
+  const [activeLeague, setActiveLeague] = useState(null) // null = all (union)
 
   useEffect(() => {
-    getLeaderboard()
+    getMyLeagues().then(setLeagues).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    getLeaderboard(activeLeague)
       .then(setRows)
       .catch((err) => setToast({ message: err.message, type: 'error' }))
       .finally(() => setLoading(false))
-  }, [])
+  }, [activeLeague])
 
   return (
     <div className="flex flex-col h-full">
@@ -50,6 +57,34 @@ export default function LeaderboardScreen() {
             <ThemeToggle />
           </div>
         </div>
+
+        {leagues.length > 1 && (
+          <div className="flex gap-2 mt-3 flex-wrap">
+            <button
+              onClick={() => setActiveLeague(null)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                activeLeague === null
+                  ? 'bg-accent text-bg border-accent'
+                  : 'border-border text-muted hover:border-accent hover:text-accent'
+              }`}
+            >
+              All
+            </button>
+            {leagues.map((l) => (
+              <button
+                key={l.id}
+                onClick={() => setActiveLeague(l.id)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                  activeLeague === l.id
+                    ? 'bg-accent text-bg border-accent'
+                    : 'border-border text-muted hover:border-accent hover:text-accent'
+                }`}
+              >
+                {l.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {rulesOpen && (
           <div className="mt-3 bg-card border border-border rounded-xl p-4 space-y-2">

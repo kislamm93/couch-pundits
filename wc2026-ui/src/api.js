@@ -81,6 +81,11 @@ export function getMatchPredictions(matchId) {
   return request(`/predictions/match/${matchId}`)
 }
 
-export function getLeaderboard() {
-  return request('/leaderboard')
+export function getLeaderboard(leagueId = null) {
+  const qs = leagueId ? `?league_id=${encodeURIComponent(leagueId)}` : ''
+  return request(`/leaderboard${qs}`)
+}
+
+export function getMyLeagues() {
+  return request('/leagues/me')
 }

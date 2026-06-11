@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 
 class RegisterRequest(BaseModel):
@@ -82,6 +82,11 @@ class MatchPredictionRow(BaseModel):
     points: Optional[int] = None
 
 
+class LeaguePicksGroup(BaseModel):
+    league_name: str
+    picks: List[MatchPredictionRow]
+
+
 class AdminMatchPredictionRow(BaseModel):
     username: str
     account_id: str
@@ -90,6 +95,21 @@ class AdminMatchPredictionRow(BaseModel):
     points: Optional[int] = None
     predicted_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+
+class LeagueInfo(BaseModel):
+    id: str
+    name: str
+
+
+class CreateLeagueRequest(BaseModel):
+    name: str
+    usernames: List[str] = []
+
+
+class UpdateLeagueMembersRequest(BaseModel):
+    add: List[str] = []
+    remove: List[str] = []
 
 
 class LeaderboardRow(BaseModel):
