@@ -79,5 +79,6 @@ class LeaderboardRow(BaseModel):
     username: str
     total_points: int
     exact_count: int
+    diff_count: int
     correct_count: int
     played: int

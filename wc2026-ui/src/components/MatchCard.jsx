@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react'
 import Stepper from './Stepper'
 import { putPrediction } from '../api'
 import { teamFlag } from '../teamFlags'
+import { pointBadgeClass } from '../scoring'
 
 function formatKickoff(utcString) {
   return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date(utcString))
+}
+
+function formatKickoffDate(utcString) {
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(utcString))
 }
 
 function countdown(utcString) {
@@ -37,11 +42,11 @@ function CheckIcon({ className = 'w-3.5 h-3.5' }) {
 
 function PointsBadge({ points }) {
   if (points === null || points === undefined) return null
-  const cfg =
-    points === 5 ? { label: '+5', cls: 'bg-accent text-bg' }
-    : points === 2 ? { label: '+2', cls: 'bg-green-900 text-accent' }
-    : { label: '+0', cls: 'bg-border text-muted' }
-  return <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${cfg.cls}`}>{cfg.label}</span>
+  return (
+    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${pointBadgeClass(points)}`}>
+      +{points}
+    </span>
+  )
 }
 
 export default function MatchCard({ fixture, prediction, onSaved, onError }) {
@@ -94,18 +99,14 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
           <span className="text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
             Group {fixture.group}
           </span>
-          {isFinished ? (
+          {isFinished && (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
               <CheckIcon className="w-3 h-3" /> Completed
             </span>
-          ) : prediction ? (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent bg-accent/10 rounded-full px-2 py-0.5">
-              <LockIcon className="w-3 h-3" /> Locked
-            </span>
-          ) : null}
+          )}
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted">{formatKickoff(fixture.kickoff_utc)}</p>
+          <p className="text-xs text-muted">{formatKickoffDate(fixture.kickoff_utc)} · {formatKickoff(fixture.kickoff_utc)}</p>
           <p className="text-xs text-muted">{fixture.stadium}</p>
           <p className="text-xs text-muted">{fixture.city}</p>
         </div>

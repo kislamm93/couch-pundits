@@ -5,6 +5,7 @@ import LeaderboardRow from '../components/LeaderboardRow'
 import Skeleton from '../components/Skeleton'
 import Toast from '../components/Toast'
 import ThemeToggle from '../components/ThemeToggle'
+import { pointTextClass } from '../scoring'
 
 const SCORING_RULES = [
   { pts: 5, label: 'Exact score', desc: 'Both teams’ goals exactly right' },
@@ -61,7 +62,7 @@ export default function LeaderboardScreen() {
                     <p className="text-[11px] font-semibold text-accent mt-0.5">{r.note}</p>
                   )}
                 </div>
-                <span className={`text-sm font-black flex-shrink-0 ${r.pts === 5 ? 'text-accent' : r.pts === 3 ? 'text-green-400' : r.pts === 2 ? 'text-sky-400' : 'text-muted'}`}>
+                <span className={`text-sm font-black flex-shrink-0 ${pointTextClass(r.pts)}`}>
                   {r.pts > 0 ? `+${r.pts} pts` : '0 pts'}
                 </span>
               </div>

@@ -3,6 +3,8 @@ import { getLeaderboard, getPredictionsMe, getFixtures, updateProfile } from '..
 import { useAuth } from '../context/AuthContext'
 import Skeleton from '../components/Skeleton'
 import ThemeToggle from '../components/ThemeToggle'
+import { teamFlag } from '../teamFlags'
+import { pointTextClass } from '../scoring'
 
 export default function ProfileScreen() {
   const { auth, logout, login } = useAuth()
@@ -14,6 +16,8 @@ export default function ProfileScreen() {
   const [teamInput, setTeamInput] = useState(auth?.favoriteTeam || '')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null) // { text, error }
+  const [editing, setEditing] = useState(false)
+  const [predOpen, setPredOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,7 +29,7 @@ export default function ProfileScreen() {
           getFixtures(),
         ])
         const myRow = lb.find((r) => r.username === auth?.username)
-        setStats(myRow || { total_points: 0, exact_count: 0, correct_count: 0, played: 0 })
+        setStats(myRow || { total_points: 0, exact_count: 0, diff_count: 0, correct_count: 0, played: 0 })
         setPredictions(preds)
         const map = {}
         for (const f of fixtures) map[f.match_id] = f
@@ -75,6 +79,13 @@ export default function ProfileScreen() {
     }
   }
 
+  function cancelEdit() {
+    setUsernameInput(auth?.username || '')
+    setTeamInput(auth?.favoriteTeam || '')
+    setMsg(null)
+    setEditing(false)
+  }
+
   const initial = auth?.username?.[0]?.toUpperCase() || '?'
 
   return (
@@ -83,40 +94,64 @@ export default function ProfileScreen() {
         <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center text-bg text-xl font-black">
           {initial}
         </div>
-        <div>
-          <h1 className="text-xl font-black">@{auth?.username}</h1>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-black truncate">@{auth?.username}</h1>
+            <button
+              onClick={() => { setMsg(null); setEditing((v) => !v) }}
+              aria-label="Edit profile"
+              className={`flex-shrink-0 transition-colors ${editing ? 'text-accent' : 'text-muted hover:text-accent'}`}
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+            </button>
+          </div>
+          {auth?.favoriteTeam && (
+            <p className="text-xs text-muted truncate">{teamFlag(auth.favoriteTeam)} {auth.favoriteTeam}</p>
+          )}
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
           <ThemeToggle />
+          <button
+            onClick={logout}
+            aria-label="Log out"
+            className="w-9 h-9 flex items-center justify-center rounded-full border border-border text-muted transition-colors hover:text-red-400 hover:border-red-400 active:scale-95"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5" />
+              <path d="M21 12H9" />
+            </svg>
+          </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto scroll-momentum pb-28 px-4 space-y-6">
-        {/* Stats card */}
-        <div className="bg-card border border-border rounded-card p-4">
-          {loading ? (
-            <div className="flex gap-4">
-              {[0, 1, 2].map((i) => <Skeleton key={i} className="flex-1 h-14" />)}
-            </div>
-          ) : (
-            <div className="flex divide-x divide-border">
-              {[
-                { label: 'Points', value: stats?.total_points ?? 0 },
-                { label: 'Exact', value: stats?.exact_count ?? 0 },
-                { label: 'Correct', value: stats?.correct_count ?? 0 },
-              ].map((s) => (
-                <div key={s.label} className="flex-1 text-center px-2">
-                  <p className="text-3xl font-black text-accent tabular-nums">{s.value}</p>
-                  <p className="text-xs text-muted mt-0.5">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Stats — 2 boxes */}
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {[0, 1].map((i) => <Skeleton key={i} className="h-20 w-full rounded-card" />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Total Points', value: stats?.total_points ?? 0 },
+              { label: 'Completed', value: stats?.played ?? 0 },
+            ].map((s) => (
+              <div key={s.label} className="bg-card border border-border rounded-card p-4 text-center">
+                <p className="text-3xl font-black tabular-nums text-accent">{s.value}</p>
+                <p className="text-xs text-muted mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Account editor */}
+        {/* Account editor — opened via the edit icon next to the name */}
+        {editing && (
         <div>
-          <h2 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Account</h2>
+          <h2 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Edit profile</h2>
           <div className="space-y-3">
             <div>
               <label className="block text-xs text-muted mb-1.5">Username</label>
@@ -152,13 +187,22 @@ export default function ProfileScreen() {
               </div>
             </div>
 
-            <button
-              onClick={handleSave}
-              disabled={!dirty || saving}
-              className="w-full py-3 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform"
-            >
-              {saving ? 'Saving…' : 'Save changes'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={cancelEdit}
+                disabled={saving}
+                className="flex-1 py-3 rounded-xl border border-border text-muted font-semibold disabled:opacity-40 active:opacity-70 transition-opacity"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={!dirty || saving}
+                className="flex-1 py-3 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform"
+              >
+                {saving ? 'Saving…' : 'Save changes'}
+              </button>
+            </div>
 
             {msg ? (
               <p className={`text-xs ${msg.error ? 'text-red-400' : 'text-muted'}`}>{msg.text}</p>
@@ -167,10 +211,20 @@ export default function ProfileScreen() {
             )}
           </div>
         </div>
+        )}
 
-        {/* Prediction list */}
+        {/* Prediction list (collapsed by default) */}
         <div>
-          <h2 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">My predictions</h2>
+          <button onClick={() => setPredOpen((v) => !v)} className="w-full flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-muted uppercase tracking-widest">
+              My predictions{!loading && predictions.length > 0 ? ` (${predictions.length})` : ''}
+            </h2>
+            <svg className={`w-4 h-4 text-muted transition-transform ${predOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {predOpen && (
+          <>
           {loading ? (
             <div className="space-y-2">
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
@@ -191,26 +245,20 @@ export default function ProfileScreen() {
                       {p.pred_home}–{p.pred_away}
                     </span>
                     {p.points !== null && p.points !== undefined ? (
-                      <span className={`text-sm font-bold ${p.points === 5 ? 'text-accent' : p.points === 2 ? 'text-green-400' : 'text-muted'}`}>
+                      <span className={`text-sm font-bold ${pointTextClass(p.points)}`}>
                         +{p.points}
                       </span>
                     ) : (
-                      <span className="text-xs text-muted">Pending</span>
+                      <span className="text-xs font-semibold text-yellow-400">Pending</span>
                     )}
                   </div>
                 )
               })}
             </div>
           )}
+          </>
+          )}
         </div>
-
-        {/* Logout */}
-        <button
-          onClick={logout}
-          className="w-full py-3 border border-border rounded-xl text-muted font-semibold active:opacity-70 transition-opacity"
-        >
-          Log out
-        </button>
       </div>
     </div>
   )

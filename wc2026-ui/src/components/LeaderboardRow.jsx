@@ -2,7 +2,7 @@ import React from 'react'
 
 const MEDAL = { 1: { color: '#FFD700', label: '🥇' }, 2: { color: '#C0C0C0', label: '🥈' }, 3: { color: '#CD7F32', label: '🥉' } }
 
-export default function LeaderboardRow({ rank, username, total_points, exact_count, correct_count, played, isMe }) {
+export default function LeaderboardRow({ rank, username, total_points, exact_count, isMe }) {
   const medal = MEDAL[rank]
 
   return (
@@ -21,7 +21,7 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
           {username} {isMe && <span className="text-xs font-normal text-muted">(you)</span>}
         </p>
         <p className="text-xs text-muted">
-          {exact_count} exact · {correct_count} correct · {played} played
+          {exact_count} exact scoreline
         </p>
       </div>
       <span className="text-2xl font-bold tabular-nums text-accent">{total_points}</span>

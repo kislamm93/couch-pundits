@@ -19,9 +19,6 @@ app = FastAPI(title="WC2026 Prediction API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_cors_origins(),
-    # Dev convenience: also accept localhost and private-LAN origins on any port
-    # so phones/other devices on the same Wi-Fi can reach the API.
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.\d+\.\d+\.\d+):\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,7 +29,7 @@ app.add_middleware(
 async def startup():
     await connect_db()
     await seed_if_empty(get_db())
-    if not settings.admin_key:
+    if not settings.admin_key.strip():
         settings.admin_key = secrets.token_urlsafe(24)
         logger.warning(
             "\n%s\n  ADMIN KEY (auto-generated this run): %s\n  Use it as the X-Admin-Key header to set match results.\n%s",

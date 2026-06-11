@@ -15,6 +15,7 @@ async def leaderboard():
                 "_id": "$account_id",
                 "total_points": {"$sum": "$points"},
                 "exact_count": {"$sum": {"$cond": [{"$eq": ["$points", 5]}, 1, 0]}},
+                "diff_count": {"$sum": {"$cond": [{"$eq": ["$points", 3]}, 1, 0]}},
                 "correct_count": {"$sum": {"$cond": [{"$eq": ["$points", 2]}, 1, 0]}},
                 "played": {"$sum": 1},
             }
@@ -37,6 +38,7 @@ async def leaderboard():
             username=r["username"],
             total_points=r["total_points"],
             exact_count=r["exact_count"],
+            diff_count=r["diff_count"],
             correct_count=r["correct_count"],
             played=r["played"],
         )

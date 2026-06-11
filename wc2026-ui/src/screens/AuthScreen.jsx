@@ -47,6 +47,7 @@ export default function AuthScreen() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-bg">
       {/* Logo / Title */}
       <div className="text-center mb-10">
+        <div className="text-5xl mb-3">🔮</div>
         <h1 className="text-3xl font-black tracking-tight">Pick Your Poison</h1>
         <p className="text-muted text-sm mt-1">Prediction League</p>
       </div>
