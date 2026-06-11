@@ -1,9 +1,11 @@
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from app.models import ResultRequest, FixtureResponse
 from app.db import fixtures_col, predictions_col
 from app.security import require_admin
 
 router = APIRouter(prefix="/fixtures", tags=["results"])
+logger = logging.getLogger("uvicorn.error")
 
 
 def _outcome(home: int, away: int) -> str:
@@ -52,6 +54,39 @@ async def set_result(match_id: int, body: ResultRequest):
         await predictions_col().update_one(
             {"_id": pred["_id"]}, {"$set": {"points": pts}}
         )
+
+    updated = await fixtures_col().find_one({"match_id": match_id}, {"_id": 0})
+    return updated
+
+
+@router.delete("/{match_id}/result", response_model=FixtureResponse, dependencies=[Depends(require_admin)])
+async def reset_result(match_id: int):
+    """Clear a match's score and un-score every prediction for it.
+
+    The leaderboard is computed live from prediction points, so resetting
+    those points to None recalculates the standings automatically.
+    """
+    fixture = await fixtures_col().find_one({"match_id": match_id})
+    if not fixture:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    await fixtures_col().update_one(
+        {"match_id": match_id},
+        {"$set": {
+            "home_score": None,
+            "away_score": None,
+            "status": "scheduled",
+        }},
+    )
+
+    result = await predictions_col().update_many(
+        {"match_id": match_id}, {"$set": {"points": None}}
+    )
+    logger.warning(
+        "RESULT RESET match=%s — cleared score, reset %s prediction(s)",
+        match_id,
+        result.modified_count,
+    )
 
     updated = await fixtures_col().find_one({"match_id": match_id}, {"_id": 0})
     return updated

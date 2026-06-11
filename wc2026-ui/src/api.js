@@ -77,6 +77,10 @@ export function putPrediction(matchId, predHome, predAway) {
   })
 }
 
+export function getMatchPredictions(matchId) {
+  return request(`/predictions/match/${matchId}`)
+}
+
 export function getLeaderboard() {
   return request('/leaderboard')
 }

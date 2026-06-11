@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
-from app.models import PredictionRequest, PredictionResponse
+from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow
 from app.db import fixtures_col, predictions_col, users_col
 from app.security import get_current_account
 
@@ -14,6 +14,46 @@ logger = logging.getLogger("uvicorn.error")
 async def my_predictions(account_id: str = Depends(get_current_account)):
     cursor = predictions_col().find({"account_id": account_id}, {"_id": 0})
     return await cursor.to_list(length=None)
+
+
+@router.get("/match/{match_id}", response_model=List[MatchPredictionRow])
+async def match_predictions(
+    match_id: int, account_id: str = Depends(get_current_account)
+):
+    """Everyone's picks for a match — only revealed once it has kicked off."""
+    fixture = await fixtures_col().find_one({"match_id": match_id})
+    if not fixture:
+        raise HTTPException(status_code=404, detail="Match not found")
+    kickoff = datetime.fromisoformat(fixture["kickoff_utc"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) < kickoff:
+        raise HTTPException(
+            status_code=403, detail="Picks are revealed after kickoff"
+        )
+
+    pipeline = [
+        {"$match": {"match_id": match_id}},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "account_id",
+                "foreignField": "account_id",
+                "as": "user",
+            }
+        },
+        {"$set": {"username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]}}},
+        # Highest scorers first, then by name for stable ordering
+        {"$sort": {"points": -1, "username": 1}},
+    ]
+    rows = await predictions_col().aggregate(pipeline).to_list(length=None)
+    return [
+        MatchPredictionRow(
+            username=r["username"],
+            pred_home=r["pred_home"],
+            pred_away=r["pred_away"],
+            points=r.get("points"),
+        )
+        for r in rows
+    ]
 
 
 @router.put("/{match_id}", response_model=PredictionResponse)

@@ -75,6 +75,13 @@ class PredictionResponse(BaseModel):
     predicted_at: Optional[datetime] = None
 
 
+class MatchPredictionRow(BaseModel):
+    username: str
+    pred_home: int
+    pred_away: int
+    points: Optional[int] = None
+
+
 class LeaderboardRow(BaseModel):
     username: str
     total_points: int

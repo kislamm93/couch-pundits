@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Stepper from './Stepper'
-import { putPrediction } from '../api'
+import { putPrediction, getMatchPredictions } from '../api'
+import { useAuth } from '../context/AuthContext'
 import { teamFlag } from '../teamFlags'
 import { pointBadgeClass } from '../scoring'
 
@@ -50,6 +51,7 @@ function PointsBadge({ points }) {
 }
 
 export default function MatchCard({ fixture, prediction, onSaved, onError }) {
+  const { auth } = useAuth()
   const isLocked = Date.now() >= new Date(fixture.kickoff_utc).getTime()
   const isFinished = fixture.status === 'finished'
 
@@ -57,6 +59,25 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
   const [awayVal, setAwayVal] = useState(prediction?.pred_away ?? 0)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(!!prediction)
+
+  const [picksOpen, setPicksOpen] = useState(false)
+  const [picks, setPicks] = useState(null) // null = not loaded yet
+  const [picksLoading, setPicksLoading] = useState(false)
+
+  async function togglePicks() {
+    if (picksOpen) { setPicksOpen(false); return }
+    setPicksOpen(true)
+    if (picks === null) {
+      setPicksLoading(true)
+      try {
+        setPicks(await getMatchPredictions(fixture.match_id))
+      } catch {
+        setPicks([])
+      } finally {
+        setPicksLoading(false)
+      }
+    }
+  }
 
   const dirty =
     !prediction
@@ -181,6 +202,53 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
           >
             {saving ? 'Saving…' : saved && !dirty ? (<><LockIcon className="w-4 h-4" /> Locked</>) : 'Save pick'}
           </button>
+        </div>
+      )}
+
+      {/* Everyone's picks — revealed once the match has kicked off */}
+      {isLocked && (
+        <div>
+          <button
+            onClick={togglePicks}
+            className="w-full flex items-center justify-center gap-1 text-xs font-semibold text-muted hover:text-accent transition-colors"
+          >
+            {picksOpen ? 'Hide picks' : "See everyone's picks"}
+            <svg className={`w-3 h-3 transition-transform ${picksOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {picksOpen && (
+            <div className="pt-2 mt-2 border-t border-border space-y-1.5">
+              {picksLoading ? (
+                <p className="text-xs text-muted text-center py-1">Loading…</p>
+              ) : !picks || picks.length === 0 ? (
+                <p className="text-xs text-muted text-center py-1">No predictions for this match.</p>
+              ) : (
+                picks.map((p) => {
+                  const isMe = p.username === auth?.username
+                  const scored = p.points !== null && p.points !== undefined
+                  return (
+                    <div key={p.username} className="flex items-center justify-between gap-2 text-sm">
+                      <span className={`truncate flex-1 ${isMe ? 'text-accent font-semibold' : ''}`}>
+                        {p.username}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
+                      </span>
+                      <span className="font-bold tabular-nums text-muted flex-shrink-0">
+                        {p.pred_home}–{p.pred_away}
+                      </span>
+                      {scored ? (
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
+                          +{p.points}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-semibold text-yellow-400 flex-shrink-0">pending</span>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
