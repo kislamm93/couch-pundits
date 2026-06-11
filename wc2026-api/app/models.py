@@ -82,6 +82,16 @@ class MatchPredictionRow(BaseModel):
     points: Optional[int] = None
 
 
+class AdminMatchPredictionRow(BaseModel):
+    username: str
+    account_id: str
+    pred_home: int
+    pred_away: int
+    points: Optional[int] = None
+    predicted_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
 class LeaderboardRow(BaseModel):
     username: str
     total_points: int

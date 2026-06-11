@@ -2,9 +2,9 @@ import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
-from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow
+from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow, AdminMatchPredictionRow
 from app.db import fixtures_col, predictions_col, users_col
-from app.security import get_current_account
+from app.security import get_current_account, require_admin
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 logger = logging.getLogger("uvicorn.error")
@@ -51,6 +51,41 @@ async def match_predictions(
             pred_home=r["pred_home"],
             pred_away=r["pred_away"],
             points=r.get("points"),
+        )
+        for r in rows
+    ]
+
+
+@router.get("/admin/match/{match_id}", response_model=List[AdminMatchPredictionRow], dependencies=[Depends(require_admin)])
+async def admin_match_predictions(match_id: int):
+    """All predictions for a match with full detail — admin only."""
+    fixture = await fixtures_col().find_one({"match_id": match_id})
+    if not fixture:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    pipeline = [
+        {"$match": {"match_id": match_id}},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "account_id",
+                "foreignField": "account_id",
+                "as": "user",
+            }
+        },
+        {"$set": {"username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]}}},
+        {"$sort": {"points": -1, "username": 1}},
+    ]
+    rows = await predictions_col().aggregate(pipeline).to_list(length=None)
+    return [
+        AdminMatchPredictionRow(
+            username=r["username"],
+            account_id=r["account_id"],
+            pred_home=r["pred_home"],
+            pred_away=r["pred_away"],
+            points=r.get("points"),
+            predicted_at=r.get("predicted_at"),
+            updated_at=r.get("updated_at"),
         )
         for r in rows
     ]

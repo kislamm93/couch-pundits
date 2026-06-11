@@ -30,7 +30,7 @@ async def leaderboard():
             }
         },
         {"$set": {"username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]}}},
-        {"$sort": {"total_points": -1}},
+        {"$sort": {"total_points": -1, "username": 1}},
     ]
     results = await predictions_col().aggregate(pipeline).to_list(length=None)
     return [
