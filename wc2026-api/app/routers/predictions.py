@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
-from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow, AdminMatchPredictionRow, LeaguePicksGroup
+from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow, AdminMatchPredictionRow, LeaguePicksGroup, UserPredictionDetail
 from app.db import fixtures_col, predictions_col, users_col, leagues_col
 from app.security import get_current_account, require_admin
 
@@ -57,6 +57,50 @@ async def _fetch_picks(match_id: int, member_ids) -> List[MatchPredictionRow]:
     return [
         MatchPredictionRow(
             username=r["username"],
+            pred_home=r["pred_home"],
+            pred_away=r["pred_away"],
+            points=r.get("points"),
+        )
+        for r in rows
+    ]
+
+
+@router.get("/user/{username}", response_model=List[UserPredictionDetail])
+async def user_predictions(username: str, account_id: str = Depends(get_current_account)):
+    """All locked predictions for a given user — scoped to shared leagues."""
+    target = await users_col().find_one({"username": username.lower().strip()})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Verify requester shares a league with the target (or neither is in any league)
+    requester_leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
+    if requester_leagues:
+        requester_ids = {aid for l in requester_leagues for aid in l["member_account_ids"]}
+        if target["account_id"] not in requester_ids:
+            raise HTTPException(status_code=403, detail="Not in the same league")
+
+    pipeline = [
+        {"$match": {"account_id": target["account_id"]}},
+        {"$lookup": {
+            "from": "fixtures",
+            "localField": "match_id",
+            "foreignField": "match_id",
+            "as": "fixture",
+        }},
+        {"$set": {"fixture": {"$first": "$fixture"}}},
+        # Only show picks that have been scored
+        {"$match": {"points": {"$ne": None}}},
+        {"$sort": {"fixture.kickoff_utc": -1}},
+    ]
+    rows = await predictions_col().aggregate(pipeline).to_list(length=None)
+    return [
+        UserPredictionDetail(
+            match_id=r["match_id"],
+            home_team=r["fixture"]["home_team"],
+            away_team=r["fixture"]["away_team"],
+            home_score=r["fixture"].get("home_score"),
+            away_score=r["fixture"].get("away_score"),
+            kickoff_utc=r["fixture"]["kickoff_utc"],
             pred_home=r["pred_home"],
             pred_away=r["pred_away"],
             points=r.get("points"),

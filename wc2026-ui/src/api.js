@@ -89,3 +89,7 @@ export function getLeaderboard(leagueId = null) {
 export function getMyLeagues() {
   return request('/leagues/me')
 }
+
+export function getUserPredictions(username) {
+  return request(`/predictions/user/${encodeURIComponent(username)}`)
+}

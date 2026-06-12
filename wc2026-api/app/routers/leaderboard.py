@@ -39,7 +39,10 @@ async def leaderboard(
                 "as": "user",
             }
         },
-        {"$set": {"username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]}}},
+        {"$set": {
+            "username": {"$ifNull": [{"$first": "$user.username"}, "unknown"]},
+            "favorite_team": {"$ifNull": [{"$first": "$user.favorite_team"}, ""]},
+        }},
         {"$sort": {"total_points": -1, "username": 1}},
     ]
     results = await predictions_col().aggregate(pipeline).to_list(length=None)
@@ -51,6 +54,7 @@ async def leaderboard(
             diff_count=r["diff_count"],
             correct_count=r["correct_count"],
             played=r["played"],
+            favorite_team=r.get("favorite_team", ""),
         )
         for r in results
     ]

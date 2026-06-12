@@ -82,6 +82,18 @@ class MatchPredictionRow(BaseModel):
     points: Optional[int] = None
 
 
+class UserPredictionDetail(BaseModel):
+    match_id: int
+    home_team: str
+    away_team: str
+    home_score: Optional[int] = None
+    away_score: Optional[int] = None
+    kickoff_utc: str
+    pred_home: int
+    pred_away: int
+    points: Optional[int] = None
+
+
 class LeaguePicksGroup(BaseModel):
     league_name: str
     picks: List[MatchPredictionRow]
@@ -119,3 +131,4 @@ class LeaderboardRow(BaseModel):
     diff_count: int
     correct_count: int
     played: int
+    favorite_team: str = ""
