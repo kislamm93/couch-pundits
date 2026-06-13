@@ -13,11 +13,6 @@ function localDateStr(utcString) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function todayStr() {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 function localDateLabel(utcString) {
   return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(utcString))
 }
@@ -41,6 +36,7 @@ export default function MatchesScreen() {
   const [filters, setFilters] = useState({ date: null, group: 'All', team: '' })
   const [hidePredicted, setHidePredicted] = useState(false)
   const [hideCompleted, setHideCompleted] = useState(true)
+  const [next24hActive, setNext24hActive] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [toast, setToast] = useState(null)
 
@@ -60,12 +56,10 @@ export default function MatchesScreen() {
 
   useEffect(() => { load() }, [load])
 
-  const todayActive = filters.date === todayStr()
   const myTeamActive = !!myTeam && filters.team === myTeam
 
-  function handleTodayClick() {
-    const today = todayStr()
-    setFilters(f => ({ ...f, date: f.date === today ? null : today }))
+  function handleNext24hClick() {
+    setNext24hActive(v => !v)
   }
 
   function handleMyTeamClick() {
@@ -76,6 +70,11 @@ export default function MatchesScreen() {
     if (filters.group !== 'All' && f.group !== filters.group) return false
     if (filters.team && f.home_team !== filters.team && f.away_team !== filters.team) return false
     if (filters.date && localDateStr(f.kickoff_utc) !== filters.date) return false
+    if (next24hActive) {
+      const now = Date.now()
+      const kickoff = new Date(f.kickoff_utc).getTime()
+      if (kickoff < now || kickoff > now + 24 * 60 * 60 * 1000) return false
+    }
     if (hidePredicted && predMap[f.match_id]) return false
     if (hideCompleted && f.status === 'finished') return false
     return true
@@ -93,6 +92,7 @@ export default function MatchesScreen() {
     setFilters({ date: null, group: 'All', team: '' })
     setHidePredicted(false)
     setHideCompleted(false)
+    setNext24hActive(false)
   }
 
   return (
@@ -121,8 +121,8 @@ export default function MatchesScreen() {
         onToggleHidePredicted={() => setHidePredicted(v => !v)}
         hideCompleted={hideCompleted}
         onToggleHideCompleted={() => setHideCompleted(v => !v)}
-        todayActive={todayActive}
-        onTodayClick={handleTodayClick}
+        next24hActive={next24hActive}
+        onNext24hClick={handleNext24hClick}
         myTeam={myTeam}
         myTeamActive={myTeamActive}
         onMyTeamClick={handleMyTeamClick}

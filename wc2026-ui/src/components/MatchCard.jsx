@@ -24,6 +24,22 @@ function countdown(utcString) {
   return `in ${m}m`
 }
 
+function groupPicksByScore(picks) {
+  const map = new Map()
+  for (const p of picks) {
+    const key = `${p.pred_home}-${p.pred_away}`
+    if (!map.has(key)) map.set(key, [])
+    map.get(key).push(p)
+  }
+  return Array.from(map.entries())
+    .sort(([, a], [, b]) => {
+      if (b.length !== a.length) return b.length - a.length
+      const [ah, aa] = a[0] ? [a[0].pred_home, a[0].pred_away] : [0, 0]
+      const [bh, ba] = b[0] ? [b[0].pred_home, b[0].pred_away] : [0, 0]
+      return ah !== bh ? ah - bh : aa - ba
+    })
+}
+
 function LockIcon({ className = 'w-3.5 h-3.5' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -238,28 +254,36 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
                         <div className="flex-1 h-px bg-border" />
                       </div>
                     )}
-                    <div className="space-y-1.5">
-                      {group.picks.map((p) => {
-                        const isMe = p.username === auth?.username
-                        const scored = p.points !== null && p.points !== undefined
-                        return (
-                          <div key={p.username} className="flex items-center justify-between gap-2 text-sm">
-                            <span className={`truncate flex-1 ${isMe ? 'text-accent font-semibold' : ''}`}>
-                              {p.username}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
-                            </span>
-                            <span className="font-bold tabular-nums text-muted flex-shrink-0">
-                              {p.pred_home}–{p.pred_away}
-                            </span>
-                            {scored ? (
-                              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
-                                +{p.points}
-                              </span>
-                            ) : (
-                              <span className="text-xs font-semibold text-yellow-400 flex-shrink-0">pending</span>
-                            )}
+                    <div className="space-y-2">
+                      {groupPicksByScore(group.picks).map(([scoreKey, scorePicks]) => (
+                        <div key={scoreKey}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-black tabular-nums text-fg">{scoreKey}</span>
+                            <span className="text-[10px] text-muted">{scorePicks.length} {scorePicks.length === 1 ? 'pick' : 'picks'}</span>
+                            <div className="flex-1 h-px bg-border" />
                           </div>
-                        )
-                      })}
+                          <div className="space-y-1">
+                            {scorePicks.map((p) => {
+                              const isMe = p.username === auth?.username
+                              const scored = p.points !== null && p.points !== undefined
+                              return (
+                                <div key={p.username} className="flex items-center justify-between gap-2 text-sm pl-2">
+                                  <span className={`truncate flex-1 ${isMe ? 'text-accent font-semibold' : ''}`}>
+                                    {p.username}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
+                                  </span>
+                                  {scored ? (
+                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
+                                      +{p.points}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs font-semibold text-yellow-400 flex-shrink-0">pending</span>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))

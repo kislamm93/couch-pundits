@@ -15,14 +15,14 @@ export default function FilterBar({
   filters, onOpen, onClear,
   hidePredicted, onToggleHidePredicted,
   hideCompleted, onToggleHideCompleted,
-  todayActive, onTodayClick,
+  next24hActive, onNext24hClick,
   myTeam, myTeamActive, onMyTeamClick,
 }) {
   const { date, group, team } = filters
 
   // Chips for panel-set filters not already represented by a quick button
   const chips = []
-  if (date && !todayActive) chips.push({ key: 'date', label: formatDate(date) })
+  if (date) chips.push({ key: 'date', label: formatDate(date) })
   if (group !== 'All') chips.push({ key: 'group', label: `Group ${group}` })
   if (team && team !== myTeam) chips.push({ key: 'team', label: team })
 
@@ -45,8 +45,8 @@ export default function FilterBar({
           )}
         </button>
 
-        <button onClick={onTodayClick} className={`${ROW_BTN} ${todayActive ? ON : OFF}`}>
-          Today
+        <button onClick={onNext24hClick} className={`${ROW_BTN} ${next24hActive ? ON : OFF}`}>
+          Next 24h
         </button>
 
         <button
