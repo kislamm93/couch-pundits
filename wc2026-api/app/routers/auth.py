@@ -37,7 +37,7 @@ async def register(body: RegisterRequest):
         }
     )
     await leagues_col().update_one(
-        {"name": "PredictionLeague"},
+        {"name": "Stockholm"},
         {"$addToSet": {"member_account_ids": account_id}},
     )
     return TokenResponse(access_token=create_token(account_id), favorite_team=favorite_team)

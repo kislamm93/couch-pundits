@@ -13,14 +13,34 @@ async def leaderboard(
     league_id: Optional[str] = Query(None),
     account_id: str = Depends(get_current_account),
 ):
-    member_ids = await _resolve_member_ids(account_id, league_id)
+    member_ids, start_date = await _resolve_league(account_id, league_id)
 
     initial_match: dict = {"points": {"$ne": None}}
     if member_ids is not None:
         initial_match["account_id"] = {"$in": member_ids}
 
-    pipeline = [
-        {"$match": initial_match},
+    pipeline: list = [{"$match": initial_match}]
+
+    if start_date is not None:
+        pipeline += [
+            {
+                "$lookup": {
+                    "from": "fixtures",
+                    "localField": "match_id",
+                    "foreignField": "match_id",
+                    "as": "fixture",
+                }
+            },
+            {"$set": {"kickoff": {"$first": "$fixture.kickoff_utc"}}},
+            {"$match": {"$expr": {
+                "$gte": [
+                    {"$dateFromString": {"dateString": "$kickoff"}},
+                    start_date,
+                ]
+            }}},
+        ]
+
+    pipeline += [
         {
             "$group": {
                 "_id": "$account_id",
@@ -45,6 +65,7 @@ async def leaderboard(
         }},
         {"$sort": {"total_points": -1, "username": 1}},
     ]
+
     results = await predictions_col().aggregate(pipeline).to_list(length=None)
     return [
         LeaderboardRow(
@@ -60,8 +81,8 @@ async def leaderboard(
     ]
 
 
-async def _resolve_member_ids(account_id: str, league_id: Optional[str]) -> Optional[list]:
-    """Return the list of account_ids to filter by, or None for no filter."""
+async def _resolve_league(account_id: str, league_id: Optional[str]):
+    """Return (member_ids, start_date). member_ids=None means no filter."""
     if league_id:
         try:
             oid = ObjectId(league_id)
@@ -72,10 +93,10 @@ async def _resolve_member_ids(account_id: str, league_id: Optional[str]) -> Opti
             raise HTTPException(status_code=404, detail="League not found")
         if account_id not in league["member_account_ids"]:
             raise HTTPException(status_code=403, detail="You are not in this league")
-        return league["member_account_ids"]
+        return league["member_account_ids"], league.get("start_date")
 
-    # Default: union of all leagues the user belongs to
+    # Default: union of all leagues the user belongs to, no date filter
     leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
     if not leagues:
-        return None  # user is in no leagues — show everyone (backwards compat)
-    return list({aid for league in leagues for aid in league["member_account_ids"]})
+        return None, None
+    return list({aid for league in leagues for aid in league["member_account_ids"]}), None
