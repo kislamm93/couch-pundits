@@ -117,7 +117,7 @@ class LeagueInfo(BaseModel):
 class CreateLeagueRequest(BaseModel):
     name: str
     usernames: List[str] = []
-    start_date: Optional[datetime] = None
+    start_date: datetime
 
 
 class UpdateLeagueMembersRequest(BaseModel):

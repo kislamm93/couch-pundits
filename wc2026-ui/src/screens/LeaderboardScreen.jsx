@@ -21,19 +21,30 @@ export default function LeaderboardScreen() {
   const [rulesOpen, setRulesOpen] = useState(false)
   const [toast, setToast] = useState(null)
   const [leagues, setLeagues] = useState([])
-  const [activeLeague, setActiveLeague] = useState(null) // null = all (union)
+  // null = global (only for users in no league); otherwise always a single group
+  const [activeLeague, setActiveLeague] = useState(null)
+  // Gate the leaderboard fetch until we know which group to scope to
+  const [leaguesLoaded, setLeaguesLoaded] = useState(false)
 
   useEffect(() => {
-    getMyLeagues().then(setLeagues).catch(() => {})
+    getMyLeagues()
+      .then((ls) => {
+        setLeagues(ls)
+        // Always scope to a single group so its start_date is respected
+        if (ls.length > 0) setActiveLeague(ls[0].id)
+      })
+      .catch(() => {})
+      .finally(() => setLeaguesLoaded(true))
   }, [])
 
   useEffect(() => {
+    if (!leaguesLoaded) return
     setLoading(true)
     getLeaderboard(activeLeague)
       .then(setRows)
       .catch((err) => setToast({ message: err.message, type: 'error' }))
       .finally(() => setLoading(false))
-  }, [activeLeague])
+  }, [activeLeague, leaguesLoaded])
 
   // Competition ranking: ties share a rank, the next score skips ahead (1, 1, 3, ...)
   const ranks = rows.map((row, i) =>
@@ -66,16 +77,6 @@ export default function LeaderboardScreen() {
 
         {leagues.length > 1 && (
           <div className="flex gap-2 mt-3 flex-wrap">
-            <button
-              onClick={() => setActiveLeague(null)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
-                activeLeague === null
-                  ? 'bg-accent text-bg border-accent'
-                  : 'border-border text-muted hover:border-accent hover:text-accent'
-              }`}
-            >
-              All
-            </button>
             {leagues.map((l) => (
               <button
                 key={l.id}
@@ -129,6 +130,7 @@ export default function LeaderboardScreen() {
               key={row.username}
               rank={ranks[i]}
               {...row}
+              leagueId={activeLeague}
               isMe={row.username === auth?.username}
             />
           ))

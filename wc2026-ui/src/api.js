@@ -90,6 +90,7 @@ export function getMyLeagues() {
   return request('/leagues/me')
 }
 
-export function getUserPredictions(username) {
-  return request(`/predictions/user/${encodeURIComponent(username)}`)
+export function getUserPredictions(username, leagueId = null) {
+  const qs = leagueId ? `?league_id=${encodeURIComponent(leagueId)}` : ''
+  return request(`/predictions/user/${encodeURIComponent(username)}${qs}`)
 }

@@ -18,9 +18,11 @@ async def my_leagues(account_id: str = Depends(get_current_account)):
 @router.post("", response_model=LeagueInfo, dependencies=[Depends(require_admin)])
 async def create_league(body: CreateLeagueRequest):
     account_ids = await _resolve_usernames(body.usernames)
-    doc = {"name": body.name, "member_account_ids": account_ids}
-    if body.start_date is not None:
-        doc["start_date"] = body.start_date
+    doc = {
+        "name": body.name,
+        "member_account_ids": account_ids,
+        "start_date": body.start_date,
+    }
     result = await leagues_col().insert_one(doc)
     return LeagueInfo(id=str(result.inserted_id), name=body.name)
 

@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException, Depends, Query
+from typing import List, Optional
 from app.models import PredictionRequest, PredictionResponse, MatchPredictionRow, AdminMatchPredictionRow, LeaguePicksGroup, UserPredictionDetail
 from app.db import fixtures_col, predictions_col, users_col, leagues_col
 from app.security import get_current_account, require_admin
@@ -66,18 +67,44 @@ async def _fetch_picks(match_id: int, member_ids) -> List[MatchPredictionRow]:
 
 
 @router.get("/user/{username}", response_model=List[UserPredictionDetail])
-async def user_predictions(username: str, account_id: str = Depends(get_current_account)):
-    """All locked predictions for a given user — scoped to shared leagues."""
+async def user_predictions(
+    username: str,
+    league_id: Optional[str] = Query(None),
+    account_id: str = Depends(get_current_account),
+):
+    """All locked predictions for a given user.
+
+    When a league_id is given, results are scoped to that league: both accounts
+    must be members and only picks for fixtures kicking off on/after the
+    league's start_date are returned. Otherwise falls back to a shared-league
+    check with no date filter.
+    """
     target = await users_col().find_one({"username": username.lower().strip()})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Verify requester shares a league with the target (or neither is in any league)
-    requester_leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
-    if requester_leagues:
-        requester_ids = {aid for l in requester_leagues for aid in l["member_account_ids"]}
-        if target["account_id"] not in requester_ids:
+    start_date = None
+    if league_id:
+        try:
+            oid = ObjectId(league_id)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid league id")
+        league = await leagues_col().find_one({"_id": oid})
+        if not league:
+            raise HTTPException(status_code=404, detail="League not found")
+        members = league["member_account_ids"]
+        if account_id not in members:
+            raise HTTPException(status_code=403, detail="You are not in this league")
+        if target["account_id"] not in members:
             raise HTTPException(status_code=403, detail="Not in the same league")
+        start_date = league.get("start_date")
+    else:
+        # Verify requester shares a league with the target (or neither is in any league)
+        requester_leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
+        if requester_leagues:
+            requester_ids = {aid for l in requester_leagues for aid in l["member_account_ids"]}
+            if target["account_id"] not in requester_ids:
+                raise HTTPException(status_code=403, detail="Not in the same league")
 
     pipeline = [
         {"$match": {"account_id": target["account_id"]}},
@@ -90,8 +117,17 @@ async def user_predictions(username: str, account_id: str = Depends(get_current_
         {"$set": {"fixture": {"$first": "$fixture"}}},
         # Only show picks that have been scored
         {"$match": {"points": {"$ne": None}}},
-        {"$sort": {"fixture.kickoff_utc": -1}},
     ]
+
+    if start_date is not None:
+        pipeline.append({"$match": {"$expr": {
+            "$gte": [
+                {"$dateFromString": {"dateString": "$fixture.kickoff_utc"}},
+                start_date,
+            ]
+        }}})
+
+    pipeline.append({"$sort": {"fixture.kickoff_utc": -1}})
     rows = await predictions_col().aggregate(pipeline).to_list(length=None)
     return [
         UserPredictionDetail(

@@ -3,7 +3,7 @@ import { teamFlag } from '../teamFlags'
 import { pointBadgeClass } from '../scoring'
 import { getUserPredictions } from '../api'
 
-export default function LeaderboardRow({ rank, username, total_points, exact_count, favorite_team, isMe }) {
+export default function LeaderboardRow({ rank, username, total_points, exact_count, favorite_team, leagueId, isMe }) {
   const [open, setOpen] = useState(false)
   const [picks, setPicks] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -13,7 +13,7 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
     setOpen(true)
     if (picks === null) {
       setLoading(true)
-      try { setPicks(await getUserPredictions(username)) }
+      try { setPicks(await getUserPredictions(username, leagueId)) }
       catch { setPicks([]) }
       finally { setLoading(false) }
     }
