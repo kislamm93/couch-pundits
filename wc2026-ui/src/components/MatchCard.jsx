@@ -138,6 +138,11 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
           <span className="text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
             Group {fixture.group}
           </span>
+          {auth?.username === 'shohan' && (
+            <span className="text-xs font-semibold text-accent bg-border rounded-full px-2 py-0.5">
+              #{fixture.match_id}
+            </span>
+          )}
           {isFinished && (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
               <CheckIcon className="w-3 h-3" /> Completed

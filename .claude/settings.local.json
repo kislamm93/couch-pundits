@@ -27,7 +27,17 @@
       "Bash(ipconfig getifaddr *)",
       "Bash(sed -n '8,13p;48,62p' screens/LeaderboardScreen.jsx)",
       "Bash(sed -n '/function PointsBadge/,/^}/p' components/MatchCard.jsx)",
-      "Bash(python3 -m py_compile app/routers/predictions.py)"
+      "Bash(python3 -m py_compile app/routers/predictions.py)",
+      "Bash(find /Users/shohan/projects/wc2026-ui -name \"*.jsx\" -o -name \"*.tsx\" -o -name \"*.js\" -o -name \"*.ts\" | grep -v node_modules | grep -v \".venv\" | sort)",
+      "Read(//Users/shohan/projects/**)",
+      "Bash(docker compose *)",
+      "Bash(curl -sf http://localhost:8000/health)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl -s http://localhost:8000/fixtures)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); f=d[0]; print\\(json.dumps\\(f, indent=2\\)\\); print\\('total fixtures:', len\\(d\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"UI HTTP %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(python3 -c \"import sys,json;f=json.load\\(sys.stdin\\);print\\('  ',f['home_team'],f['home_score'],'-',f['away_score'],f['away_team'],'| status:',f['status']\\)\")",
+      "Bash(git checkout *)"
     ]
   }
 }

@@ -3,10 +3,7 @@ import { teamFlag } from '../teamFlags'
 import { pointBadgeClass } from '../scoring'
 import { getUserPredictions } from '../api'
 
-const MEDAL = { 1: { color: '#FFD700', label: '🥇' }, 2: { color: '#C0C0C0', label: '🥈' }, 3: { color: '#CD7F32', label: '🥉' } }
-
 export default function LeaderboardRow({ rank, username, total_points, exact_count, favorite_team, isMe }) {
-  const medal = MEDAL[rank]
   const [open, setOpen] = useState(false)
   const [picks, setPicks] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -31,14 +28,13 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
         onClick={toggle}
         className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-border transition-colors"
       >
-        <span className="w-7 text-center font-bold text-sm" style={{ color: medal ? medal.color : '#8A93A3' }}>
-          {medal ? medal.label : rank}
+        <span className="w-7 text-center font-bold text-sm" style={{ color: '#8A93A3' }}>
+          {rank}
         </span>
         <div className="flex-1 min-w-0">
           <p className={`font-semibold truncate ${isMe ? 'text-accent' : 'text-fg'}`}>
-            {username}{favorite_team && <span className="ml-1">{teamFlag(favorite_team)}</span>}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
+            {username}{favorite_team && <span className="ml-1">{teamFlag(favorite_team)}</span>}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}<span className="ml-1 text-xs font-normal text-muted">{exact_count} 🎯</span>
           </p>
-          <p className="text-xs text-muted">{exact_count} exact scoreline</p>
         </div>
         <span className="text-2xl font-bold tabular-nums text-accent">{total_points}</span>
         <svg className={`w-3 h-3 text-muted transition-transform flex-shrink-0 ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

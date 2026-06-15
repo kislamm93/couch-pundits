@@ -35,6 +35,12 @@ export default function LeaderboardScreen() {
       .finally(() => setLoading(false))
   }, [activeLeague])
 
+  // Competition ranking: ties share a rank, the next score skips ahead (1, 1, 3, ...)
+  const ranks = rows.map((row, i) =>
+    i > 0 && rows[i - 1].total_points === row.total_points ? null : i + 1
+  )
+  ranks.forEach((r, i) => { if (r === null) ranks[i] = ranks[i - 1] })
+
   return (
     <div className="flex flex-col h-full">
       {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
@@ -121,7 +127,7 @@ export default function LeaderboardScreen() {
           rows.map((row, i) => (
             <LeaderboardRow
               key={row.username}
-              rank={i + 1}
+              rank={ranks[i]}
               {...row}
               isMe={row.username === auth?.username}
             />
