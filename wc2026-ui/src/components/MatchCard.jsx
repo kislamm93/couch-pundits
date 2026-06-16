@@ -70,6 +70,10 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
   const { auth } = useAuth()
   const isLocked = Date.now() >= new Date(fixture.kickoff_utc).getTime()
   const isFinished = fixture.status === 'finished'
+  // Kicked off but not yet final → live. Status stays "scheduled" during play,
+  // so we infer "live" from the clock; the poller keeps the score fresh.
+  const isLive = isLocked && !isFinished
+  const hasLiveScore = fixture.home_score !== null && fixture.home_score !== undefined
 
   const [homeVal, setHomeVal] = useState(prediction?.pred_home ?? 0)
   const [awayVal, setAwayVal] = useState(prediction?.pred_away ?? 0)
@@ -143,6 +147,11 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
               #{fixture.match_id}
             </span>
           )}
+          {isLive && (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-red-600 rounded-full px-2 py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
+            </span>
+          )}
           {isFinished && (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
               <CheckIcon className="w-3 h-3" /> Completed
@@ -188,21 +197,34 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
             </div>
           </div>
         </div>
-      ) : isLocked ? (
-        /* ── LOCKED STATE ── */
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{teamFlag(fixture.home_team)} {fixture.home_team}</span>
-            <div className="flex items-center gap-2">
-              {prediction && <span className="text-sm font-bold text-muted">{prediction.pred_home}</span>}
-              <span className="text-xs text-muted">🔒</span>
+      ) : isLive ? (
+        /* ── LIVE STATE (running score, same compact row as finished) ── */
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold flex items-center gap-1 flex-1 min-w-0">
+              <span>{teamFlag(fixture.home_team)}</span>
+              <span className="truncate">{fixture.home_team}</span>
+            </span>
+            <span className="text-2xl font-black tabular-nums flex-shrink-0">
+              {fixture.home_score ?? 0}<span className="text-muted mx-1.5">–</span>{fixture.away_score ?? 0}
+            </span>
+            <span className="font-semibold flex items-center justify-end gap-1 flex-1 min-w-0">
+              <span className="truncate text-right">{fixture.away_team}</span>
+              <span>{teamFlag(fixture.away_team)}</span>
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted">
+              {prediction ? `Your pick: ${prediction.pred_home}–${prediction.pred_away}` : 'No pick'}
+            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <PointsBadge points={prediction?.points} />
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-red-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                {hasLiveScore ? 'LIVE' : 'Kicked off'}
+              </span>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{teamFlag(fixture.away_team)} {fixture.away_team}</span>
-            {prediction && <span className="text-sm font-bold text-muted">{prediction.pred_away}</span>}
-          </div>
-          <p className="text-xs text-center text-muted">Locked — match has kicked off</p>
         </div>
       ) : (
         /* ── OPEN / PREDICTED STATE ── */

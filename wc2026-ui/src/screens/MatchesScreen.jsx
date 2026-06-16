@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { getFixtures, getPredictionsMe } from '../api'
 import { useAuth } from '../context/AuthContext'
 import FilterBar from '../components/FilterBar'
@@ -55,6 +55,29 @@ export default function MatchesScreen() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  // Latest fixtures, readable from the polling interval without re-arming it.
+  const fixturesRef = useRef(fixtures)
+  useEffect(() => { fixturesRef.current = fixtures }, [fixtures])
+
+  // Refresh live scores ~every 60s (matches the backend poller), but only when
+  // it's worth it: the tab is visible AND a match is live or kicking off within
+  // the next minute. Otherwise the timer is a cheap no-op — no network call.
+  // Fixtures only, so an in-progress edit on an unsaved pick isn't clobbered.
+  useEffect(() => {
+    const id = setInterval(async () => {
+      if (document.visibilityState !== 'visible') return
+      const now = Date.now()
+      const active = fixturesRef.current.some(f => {
+        if (f.status === 'finished') return false
+        const ko = new Date(f.kickoff_utc).getTime()
+        return ko <= now + 60000 && ko > now - 3 * 60 * 60 * 1000 // imminent, or within a match window
+      })
+      if (!active) return
+      try { setFixtures(await getFixtures()) } catch { /* keep last good data */ }
+    }, 60000)
+    return () => clearInterval(id)
+  }, [])
 
   const myTeamActive = !!myTeam && filters.team === myTeam
 

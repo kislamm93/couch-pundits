@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import secrets
 
@@ -10,6 +11,8 @@ from app.db import users_col, fixtures_col
 from app.security import get_current_account, create_token
 from app.models import MeResponse, ThemeRequest, ProfileUpdateRequest, ProfileResponse
 from app.seed import seed_if_empty
+from app.backfill_event_ids import backfill_event_ids
+from app.livescores import run_poller
 from app.routers import auth, fixtures, predictions, leaderboard, results, leagues
 
 logger = logging.getLogger("uvicorn.error")
@@ -37,10 +40,19 @@ async def startup():
             settings.admin_key,
             "=" * 70,
         )
+    # Background tasks (kept on app.state so they aren't garbage-collected):
+    # map any unmapped fixtures, then poll live scores. Both are network-bound
+    # and must not block startup / the health check.
+    app.state.backfill_task = asyncio.create_task(backfill_event_ids())
+    app.state.live_poller = asyncio.create_task(run_poller())
 
 
 @app.on_event("shutdown")
 async def shutdown():
+    for name in ("backfill_task", "live_poller"):
+        task = getattr(app.state, name, None)
+        if task:
+            task.cancel()
     await close_db()
 
 

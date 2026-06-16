@@ -26,6 +26,7 @@ services:
       JWT_SECRET: local-dev-secret-change-me
       ADMIN_KEY: local-admin-key
       CORS_ORIGINS: http://localhost:5173
+      LIVE_POLL_DEBUG: "true"   # per-cycle poller heartbeat in local logs
     volumes:
       - ./wc2026-api/app:/app/app
       - ./wc2026-api/scripts:/app/scripts
