@@ -33,9 +33,8 @@ export default function MatchesScreen() {
   const [fixtures, setFixtures] = useState([])
   const [predMap, setPredMap] = useState({})
   const [loading, setLoading] = useState(true)
+  const [fixtureTab, setFixtureTab] = useState('upcoming')
   const [filters, setFilters] = useState({ date: null, group: 'All', team: '' })
-  const [hidePredicted, setHidePredicted] = useState(false)
-  const [hideCompleted, setHideCompleted] = useState(true)
   const [next24hActive, setNext24hActive] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [toast, setToast] = useState(null)
@@ -90,6 +89,8 @@ export default function MatchesScreen() {
   }
 
   const filtered = fixtures.filter(f => {
+    if (fixtureTab === 'upcoming' && f.status === 'finished') return false
+    if (fixtureTab === 'results' && f.status !== 'finished') return false
     if (filters.group !== 'All' && f.group !== filters.group) return false
     if (filters.team && f.home_team !== filters.team && f.away_team !== filters.team) return false
     if (filters.date && localDateStr(f.kickoff_utc) !== filters.date) return false
@@ -98,11 +99,13 @@ export default function MatchesScreen() {
       const kickoff = new Date(f.kickoff_utc).getTime()
       if (kickoff < now || kickoff > now + 24 * 60 * 60 * 1000) return false
     }
-    if (hidePredicted && predMap[f.match_id]) return false
-    if (hideCompleted && f.status === 'finished') return false
     return true
   })
-  const grouped = groupByDate(filtered)
+  const sorted = [...filtered].sort((a, b) => {
+    const diff = new Date(a.kickoff_utc) - new Date(b.kickoff_utc)
+    return fixtureTab === 'upcoming' ? diff : -diff
+  })
+  const grouped = groupByDate(sorted)
 
   function handleClearFilter(key) {
     setFilters(f => ({
@@ -113,8 +116,6 @@ export default function MatchesScreen() {
 
   function clearAll() {
     setFilters({ date: null, group: 'All', team: '' })
-    setHidePredicted(false)
-    setHideCompleted(false)
     setNext24hActive(false)
   }
 
@@ -136,14 +137,23 @@ export default function MatchesScreen() {
         <ThemeToggle />
       </div>
 
+      {/* Tab switcher */}
+      <div className="px-4 pt-1 pb-0 flex gap-1">
+        {[{ id: 'upcoming', label: 'Upcoming' }, { id: 'results', label: 'Results' }].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setFixtureTab(tab.id)}
+            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${fixtureTab === tab.id ? 'bg-accent text-bg' : 'text-muted'}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <FilterBar
         filters={filters}
         onOpen={() => setPanelOpen(true)}
         onClear={handleClearFilter}
-        hidePredicted={hidePredicted}
-        onToggleHidePredicted={() => setHidePredicted(v => !v)}
-        hideCompleted={hideCompleted}
-        onToggleHideCompleted={() => setHideCompleted(v => !v)}
         next24hActive={next24hActive}
         onNext24hClick={handleNext24hClick}
         myTeam={myTeam}

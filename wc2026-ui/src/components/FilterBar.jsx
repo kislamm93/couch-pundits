@@ -13,8 +13,6 @@ const OFF = 'bg-transparent border-border text-muted'
 
 export default function FilterBar({
   filters, onOpen, onClear,
-  hidePredicted, onToggleHidePredicted,
-  hideCompleted, onToggleHideCompleted,
   next24hActive, onNext24hClick,
   myTeam, myTeamActive, onMyTeamClick,
 }) {
@@ -62,23 +60,6 @@ export default function FilterBar({
           ) : (
             'My Team'
           )}
-        </button>
-      </div>
-
-      {/* Row 2: Hide completed · Hide predicted — full width */}
-      <div className="flex items-stretch gap-2">
-        <button onClick={onToggleHideCompleted} className={`${ROW_BTN} ${hideCompleted ? ON : OFF}`}>
-          Hide completed
-          <span className={`inline-flex w-7 h-4 rounded-full transition-colors items-center px-0.5 flex-shrink-0 ${hideCompleted ? 'bg-accent' : 'bg-border'}`}>
-            <span className={`w-3 h-3 rounded-full bg-white transition-transform ${hideCompleted ? 'translate-x-3' : 'translate-x-0'}`} />
-          </span>
-        </button>
-
-        <button onClick={onToggleHidePredicted} className={`${ROW_BTN} ${hidePredicted ? ON : OFF}`}>
-          Hide predicted
-          <span className={`inline-flex w-7 h-4 rounded-full transition-colors items-center px-0.5 flex-shrink-0 ${hidePredicted ? 'bg-accent' : 'bg-border'}`}>
-            <span className={`w-3 h-3 rounded-full bg-white transition-transform ${hidePredicted ? 'translate-x-3' : 'translate-x-0'}`} />
-          </span>
         </button>
       </div>
 
