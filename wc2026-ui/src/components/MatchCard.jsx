@@ -251,7 +251,7 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
       )}
 
       {/* Everyone's picks — revealed once the match has kicked off */}
-      {(isLocked || auth?.username === 'shohan') && (
+      {isLocked && (
         <div>
           <button
             onClick={togglePicks}

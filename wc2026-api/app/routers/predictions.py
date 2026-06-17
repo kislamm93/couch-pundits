@@ -27,9 +27,7 @@ async def match_predictions(
         raise HTTPException(status_code=404, detail="Match not found")
     kickoff = datetime.fromisoformat(fixture["kickoff_utc"].replace("Z", "+00:00"))
     if datetime.now(timezone.utc) < kickoff:
-        user = await users_col().find_one({"account_id": account_id}, {"username": 1})
-        if not user or user.get("username") != "shohan":
-            raise HTTPException(status_code=403, detail="Picks are revealed after kickoff")
+        raise HTTPException(status_code=403, detail="Picks are revealed after kickoff")
 
     user_leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
 
