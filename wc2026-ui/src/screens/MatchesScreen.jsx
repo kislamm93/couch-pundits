@@ -137,17 +137,19 @@ export default function MatchesScreen() {
         <ThemeToggle />
       </div>
 
-      {/* Tab switcher */}
-      <div className="px-4 pt-1 pb-0 flex gap-1">
-        {[{ id: 'upcoming', label: 'Upcoming' }, { id: 'results', label: 'Results' }].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setFixtureTab(tab.id)}
-            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${fixtureTab === tab.id ? 'bg-accent text-bg' : 'text-muted'}`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Tab switcher — segmented control */}
+      <div className="px-4 pt-2 pb-0">
+        <div className="flex bg-border rounded-xl p-1 gap-1">
+          {[{ id: 'upcoming', label: 'Upcoming' }, { id: 'results', label: 'Results' }].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setFixtureTab(tab.id)}
+              className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${fixtureTab === tab.id ? 'bg-accent text-bg shadow-sm' : 'text-muted'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <FilterBar
