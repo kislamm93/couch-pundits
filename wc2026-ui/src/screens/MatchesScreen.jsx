@@ -137,14 +137,19 @@ export default function MatchesScreen() {
         <ThemeToggle />
       </div>
 
-      {/* Tab switcher — segmented control */}
+      {/* Tab switcher — segmented control with sliding indicator */}
       <div className="px-4 pt-2 pb-0">
-        <div className="flex bg-border rounded-xl p-1 gap-1">
+        <div className="relative flex bg-border rounded-xl p-1 gap-1">
+          {/* sliding pill */}
+          <span
+            className="absolute top-1 bottom-1 w-[calc(50%-6px)] rounded-lg bg-accent transition-transform duration-200 ease-in-out"
+            style={{ transform: fixtureTab === 'results' ? 'translateX(calc(100% + 4px))' : 'translateX(0)' }}
+          />
           {[{ id: 'upcoming', label: 'Upcoming' }, { id: 'results', label: 'Results' }].map(tab => (
             <button
               key={tab.id}
               onClick={() => setFixtureTab(tab.id)}
-              className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${fixtureTab === tab.id ? 'bg-accent text-bg shadow-sm' : 'text-muted'}`}
+              className={`relative z-10 flex-1 py-1.5 text-sm font-bold rounded-lg transition-colors duration-200 ${fixtureTab === tab.id ? 'text-bg' : 'text-muted'}`}
             >
               {tab.label}
             </button>
