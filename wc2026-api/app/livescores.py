@@ -118,6 +118,18 @@ async def _apply_event(event):
     if not fixture or fixture.get("status") == "finished":
         return False  # unmapped, or already terminal — never override a final result
 
+    # Guard against a stale/historical event ID mapping: if the feed's event date
+    # doesn't match our fixture's kickoff date, the sportsdb_event_id is wrong.
+    feed_date = event.get("dateEvent") or ""  # "YYYY-MM-DD"
+    fixture_kickoff = fixture.get("kickoff_utc") or ""  # "YYYY-MM-DDTHH:MM:SSZ"
+    if feed_date and fixture_kickoff and not fixture_kickoff.startswith(feed_date):
+        logger.warning(
+            "BAD MAPPING — match %s %s v %s: sportsdb_event_id %s belongs to %s, not %s — skipping",
+            fixture.get("match_id"), fixture.get("home_team"), fixture.get("away_team"),
+            event.get("idEvent"), feed_date, fixture_kickoff[:10],
+        )
+        return False
+
     status = event.get("strStatus") or ""
     home, away = _to_int(event.get("intHomeScore")), _to_int(event.get("intAwayScore"))
     if home is None or away is None:

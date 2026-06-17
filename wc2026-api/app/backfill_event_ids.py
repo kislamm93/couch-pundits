@@ -52,8 +52,13 @@ def _normalize(name):
     return ALIASES.get(canonical, canonical)
 
 
-def _search(home, away):
-    """Blocking lookup. Returns (idEvent | None, empty_response: bool)."""
+def _search(home, away, kickoff_date=None):
+    """Blocking lookup. Returns (idEvent | None, empty_response: bool).
+
+    kickoff_date, if provided, is a "YYYY-MM-DD" string used to disambiguate
+    when TheSportsDB returns multiple WC fixtures for the same pair of teams
+    (e.g. historical + current tournament).
+    """
     query = f"{_normalize(home)}_vs_{_normalize(away)}"
     url = (f"https://www.thesportsdb.com/api/v1/json/{SPORTSDB_KEY}"
            f"/searchevents.php?e={quote(query)}")
@@ -62,12 +67,22 @@ def _search(home, away):
         events = json.load(resp).get("event") or []
     if not events:
         return None, True  # nothing back — genuinely absent OR rate-limited
-    for e in events:
+    candidates = [
+        e for e in events
         if (LEAGUE_FILTER in (e.get("strLeague") or "").lower()
-                and _normalize(e.get("strHomeTeam")) == _normalize(home)
-                and _normalize(e.get("strAwayTeam")) == _normalize(away)):
-            return e.get("idEvent"), False
-    return None, False  # results returned but none were our match
+            and _normalize(e.get("strHomeTeam")) == _normalize(home)
+            and _normalize(e.get("strAwayTeam")) == _normalize(away))
+    ]
+    if not candidates:
+        return None, False  # results returned but none were our match
+    if kickoff_date:
+        # When we know the expected date, require an exact match — never fall
+        # back to a different-dated candidate (e.g. a historical WC result).
+        for e in candidates:
+            if (e.get("dateEvent") or "") == kickoff_date:
+                return e.get("idEvent"), False
+        return None, False  # candidates exist but none are on our date
+    return candidates[0].get("idEvent"), False
 
 
 async def backfill_event_ids():
@@ -82,8 +97,9 @@ async def backfill_event_ids():
     mapped = 0
     empty_streak = 0
     for fixture in sorted(todo, key=lambda f: f.get("kickoff_utc", "")):
+        kickoff_date = (fixture.get("kickoff_utc") or "")[:10] or None
         try:
-            eid, empty = await asyncio.to_thread(_search, fixture["home_team"], fixture["away_team"])
+            eid, empty = await asyncio.to_thread(_search, fixture["home_team"], fixture["away_team"], kickoff_date)
         except Exception as exc:
             logger.warning("Event-ID backfill: lookup failed for match %s — %s",
                            fixture["match_id"], exc)
