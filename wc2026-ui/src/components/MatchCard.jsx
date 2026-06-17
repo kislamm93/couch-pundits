@@ -73,7 +73,6 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
   // Kicked off but not yet final → live. Status stays "scheduled" during play,
   // so we infer "live" from the clock; the poller keeps the score fresh.
   const isLive = isLocked && !isFinished
-  const hasLiveScore = fixture.home_score !== null && fixture.home_score !== undefined
 
   const [homeVal, setHomeVal] = useState(prediction?.pred_home ?? 0)
   const [awayVal, setAwayVal] = useState(prediction?.pred_away ?? 0)
@@ -189,11 +188,16 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-muted">
-              {prediction ? `Your pick: ${prediction.pred_home}–${prediction.pred_away}` : ''}
+              {prediction ? `Your pick: ${prediction.pred_home}–${prediction.pred_away}` : 'No pick'}
             </span>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <PointsBadge points={prediction?.points} />
-              <span className="text-xs text-muted bg-border rounded-full px-2 py-0.5">FT</span>
+              {!prediction ? (
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${pointBadgeClass(0)}`}>+0</span>
+              ) : prediction.points === null || prediction.points === undefined ? (
+                <span className="text-xs font-semibold text-yellow-400">pending</span>
+              ) : (
+                <PointsBadge points={prediction.points} />
+              )}
             </div>
           </div>
         </div>
@@ -219,10 +223,6 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
             </span>
             <div className="flex items-center gap-2 flex-shrink-0">
               <PointsBadge points={prediction?.points} />
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-red-500">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                {hasLiveScore ? 'LIVE' : 'Kicked off'}
-              </span>
             </div>
           </div>
         </div>

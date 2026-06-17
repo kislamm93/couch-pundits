@@ -95,7 +95,11 @@ async def _resolve_league(account_id: str, league_id: Optional[str]):
             raise HTTPException(status_code=403, detail="You are not in this league")
         return league["member_account_ids"], league.get("start_date")
 
-    # No league selected: global leaderboard (everyone, all history). Only reached
-    # by users in no league — the FE always sends a league_id when the user has
-    # groups, so cross-group point leakage is no longer possible here.
+    # No league_id given — check if the user is in any league.
+    # If they are, scope to their first league to prevent cross-league data leakage.
+    # Only users in no league at all see the unrestricted global leaderboard.
+    user_leagues = await leagues_col().find({"member_account_ids": account_id}).to_list(length=None)
+    if user_leagues:
+        league = user_leagues[0]
+        return league["member_account_ids"], league.get("start_date")
     return None, None
