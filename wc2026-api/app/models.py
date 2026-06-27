@@ -45,7 +45,8 @@ class ProfileResponse(BaseModel):
 
 class FixtureResponse(BaseModel):
     match_id: int
-    group: str
+    group: Optional[str] = None
+    round: Optional[str] = None
     home_team: str
     away_team: str
     stadium: str
@@ -55,22 +56,30 @@ class FixtureResponse(BaseModel):
     home_score: Optional[int] = None
     away_score: Optional[int] = None
     status: str
+    # Set only for a knockout match that finished level and went to a shootout.
+    penalty_winner: Optional[Literal["home", "away"]] = None
 
 
 class ResultRequest(BaseModel):
     home_score: int = Field(ge=0)
     away_score: int = Field(ge=0)
+    # Only meaningful when the score above is a draw on a knockout fixture.
+    penalty_winner: Optional[Literal["home", "away"]] = None
 
 
 class PredictionRequest(BaseModel):
     pred_home: int = Field(ge=0)
     pred_away: int = Field(ge=0)
+    # Optional penalty-shootout pick, only used when predicting a draw on a
+    # knockout match. Worth +2 bonus points if it matches the actual shootout winner.
+    pred_penalty_winner: Optional[Literal["home", "away"]] = None
 
 
 class PredictionResponse(BaseModel):
     match_id: int
     pred_home: int
     pred_away: int
+    pred_penalty_winner: Optional[Literal["home", "away"]] = None
     points: Optional[int] = None
     predicted_at: Optional[datetime] = None
 
@@ -79,6 +88,7 @@ class MatchPredictionRow(BaseModel):
     username: str
     pred_home: int
     pred_away: int
+    pred_penalty_winner: Optional[Literal["home", "away"]] = None
     points: Optional[int] = None
 
 
@@ -88,9 +98,11 @@ class UserPredictionDetail(BaseModel):
     away_team: str
     home_score: Optional[int] = None
     away_score: Optional[int] = None
+    penalty_winner: Optional[Literal["home", "away"]] = None
     kickoff_utc: str
     pred_home: int
     pred_away: int
+    pred_penalty_winner: Optional[Literal["home", "away"]] = None
     points: Optional[int] = None
 
 
@@ -104,6 +116,7 @@ class AdminMatchPredictionRow(BaseModel):
     account_id: str
     pred_home: int
     pred_away: int
+    pred_penalty_winner: Optional[Literal["home", "away"]] = None
     points: Optional[int] = None
     predicted_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

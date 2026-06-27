@@ -21,7 +21,7 @@ export default function FilterBar({
   // Chips for panel-set filters not already represented by a quick button
   const chips = []
   if (date) chips.push({ key: 'date', label: formatDate(date) })
-  if (group !== 'All') chips.push({ key: 'group', label: `Group ${group}` })
+  if (group !== 'All') chips.push({ key: 'group', label: group === 'KO' ? 'Knockout stage' : `Group ${group}` })
   if (team && team !== myTeam) chips.push({ key: 'team', label: team })
 
   const panelActive = chips.length > 0

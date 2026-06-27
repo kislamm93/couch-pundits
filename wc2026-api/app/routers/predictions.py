@@ -60,6 +60,7 @@ async def _fetch_picks(match_id: int, member_ids) -> List[MatchPredictionRow]:
             username=r["username"],
             pred_home=r["pred_home"],
             pred_away=r["pred_away"],
+            pred_penalty_winner=r.get("pred_penalty_winner"),
             points=r.get("points"),
         )
         for r in rows
@@ -136,9 +137,11 @@ async def user_predictions(
             away_team=r["fixture"]["away_team"],
             home_score=r["fixture"].get("home_score"),
             away_score=r["fixture"].get("away_score"),
+            penalty_winner=r["fixture"].get("penalty_winner"),
             kickoff_utc=r["fixture"]["kickoff_utc"],
             pred_home=r["pred_home"],
             pred_away=r["pred_away"],
+            pred_penalty_winner=r.get("pred_penalty_winner"),
             points=r.get("points"),
         )
         for r in rows
@@ -172,6 +175,7 @@ async def admin_match_predictions(match_id: int):
             account_id=r["account_id"],
             pred_home=r["pred_home"],
             pred_away=r["pred_away"],
+            pred_penalty_winner=r.get("pred_penalty_winner"),
             points=r.get("points"),
             predicted_at=r.get("predicted_at"),
             updated_at=r.get("updated_at"),
@@ -194,6 +198,10 @@ async def upsert_prediction(
     if datetime.now(timezone.utc) >= kickoff:
         raise HTTPException(status_code=409, detail="Prediction locked — match has kicked off")
 
+    # Penalty pick is only meaningful when predicting a draw — drop it otherwise
+    # rather than rejecting, since it's an optional bonus pick, not a hard rule.
+    pred_penalty_winner = body.pred_penalty_winner if body.pred_home == body.pred_away else None
+
     now = datetime.now(timezone.utc)
     await predictions_col().update_one(
         {"account_id": account_id, "match_id": match_id},
@@ -203,6 +211,7 @@ async def upsert_prediction(
                 "match_id": match_id,
                 "pred_home": body.pred_home,
                 "pred_away": body.pred_away,
+                "pred_penalty_winner": pred_penalty_winner,
                 "points": None,
                 "updated_at": now,
             },
@@ -225,5 +234,6 @@ async def upsert_prediction(
     )
 
     return PredictionResponse(
-        match_id=match_id, pred_home=body.pred_home, pred_away=body.pred_away
+        match_id=match_id, pred_home=body.pred_home, pred_away=body.pred_away,
+        pred_penalty_winner=pred_penalty_winner,
     )

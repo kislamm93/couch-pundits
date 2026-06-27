@@ -91,7 +91,8 @@ export default function MatchesScreen() {
   const filtered = fixtures.filter(f => {
     if (fixtureTab === 'upcoming' && f.status === 'finished') return false
     if (fixtureTab === 'results' && f.status !== 'finished') return false
-    if (filters.group !== 'All' && f.group !== filters.group) return false
+    if (filters.group === 'KO' && f.stage !== 'knockout') return false
+    if (filters.group !== 'All' && filters.group !== 'KO' && f.group !== filters.group) return false
     if (filters.team && f.home_team !== filters.team && f.away_team !== filters.team) return false
     if (filters.date && localDateStr(f.kickoff_utc) !== filters.date) return false
     if (next24hActive) {

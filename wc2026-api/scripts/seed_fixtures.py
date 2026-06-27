@@ -16,7 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 # Make the `app` package importable when run as `python scripts/seed_fixtures.py`
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.seed import build_fixtures  # noqa: E402
+from app.seed import build_fixtures, build_knockout_fixtures  # noqa: E402
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -28,7 +28,7 @@ async def seed():
     client = AsyncIOMotorClient(MONGODB_URI)
     col = client[DB_NAME]["fixtures"]
 
-    fixtures = build_fixtures()
+    fixtures = build_fixtures() + build_knockout_fixtures()
     print(f"Built {len(fixtures)} fixtures from 2026/worldcup.json")
 
     upserted = 0

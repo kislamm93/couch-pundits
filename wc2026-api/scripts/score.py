@@ -19,17 +19,24 @@ def _outcome(home: int, away: int) -> str:
     return "draw"
 
 
-def compute_points(pred_home: int, pred_away: int, home_score: int, away_score: int) -> int:
+def compute_points(
+    pred_home: int, pred_away: int, home_score: int, away_score: int,
+    pred_penalty_winner: str = None, penalty_winner: str = None,
+) -> int:
     if pred_home == home_score and pred_away == away_score:
-        return 5
+        points = 5
     # Correct signed goal difference on a decisive result (1-0 ≠ 0-1).
     # Draws (pred_home == pred_away) are excluded — they fall through to the
     # outcome tier below and score 2, since every draw shares a 0 difference.
-    if pred_home != pred_away and (pred_home - pred_away) == (home_score - away_score):
-        return 3
-    if _outcome(pred_home, pred_away) == _outcome(home_score, away_score):
-        return 2
-    return 0
+    elif pred_home != pred_away and (pred_home - pred_away) == (home_score - away_score):
+        points = 3
+    elif _outcome(pred_home, pred_away) == _outcome(home_score, away_score):
+        points = 2
+    else:
+        points = 0
+    if penalty_winner and pred_penalty_winner and pred_penalty_winner == penalty_winner:
+        points += 2
+    return points
 
 
 async def score():
@@ -52,6 +59,7 @@ async def score():
             pts = compute_points(
                 pred["pred_home"], pred["pred_away"],
                 fixture["home_score"], fixture["away_score"],
+                pred.get("pred_penalty_winner"), fixture.get("penalty_winner"),
             )
             await predictions_col.update_one(
                 {"_id": pred["_id"]}, {"$set": {"points": pts}}

@@ -70,3 +70,63 @@ async def seed_if_empty(db):
         print(f"Seeded {len(fixtures)} fixtures from 2026/worldcup.json")
     except Exception as exc:
         print(f"WARNING: fixture seed skipped — {exc}")
+
+
+# Round-of-32 matchups confirmed so far, once final group standings locked the
+# teams in. (match_id, date, "HH:MM UTC±N", home, away, ground)
+# The rest of the knockout bracket is still undetermined — add later fixtures
+# by hand in Mongo once their matchups are confirmed.
+KNOCKOUT_R32 = [
+    (73, "2026-06-28", "12:00 UTC-7", "South Africa", "Canada", "Los Angeles (Inglewood)"),
+    (74, "2026-06-29", "16:30 UTC-4", "Germany", "Paraguay", "Boston (Foxborough)"),
+    (75, "2026-06-29", "19:00 UTC-6", "Netherlands", "Morocco", "Monterrey (Guadalupe)"),
+    (76, "2026-06-29", "12:00 UTC-5", "Brazil", "Japan", "Houston"),
+    (77, "2026-06-30", "17:00 UTC-4", "France", "Sweden", "New York/New Jersey (East Rutherford)"),
+    (78, "2026-06-30", "12:00 UTC-5", "Ivory Coast", "Norway", "Dallas (Arlington)"),
+]
+
+
+def build_knockout_fixtures():
+    """The confirmed Round-of-32 fixtures — see KNOCKOUT_R32 above."""
+    with open(DATA_DIR / "worldcup.stadiums.json") as f:
+        stadiums_data = json.load(f)
+    city_to_stadium = {s["city"]: s["name"] for s in stadiums_data["stadiums"]}
+
+    fixtures = []
+    for match_id, date, time_str, home, away, city in KNOCKOUT_R32:
+        fixtures.append({
+            "match_id": match_id,
+            "group": None,
+            "round": "Round of 32",
+            "home_team": home,
+            "away_team": away,
+            "stadium": city_to_stadium.get(city, city),
+            "city": city,
+            "kickoff_utc": parse_kickoff_utc(date, time_str),
+            "stage": "knockout",
+            "home_score": None,
+            "away_score": None,
+            "status": "scheduled",
+        })
+    return fixtures
+
+
+async def seed_knockout_if_missing(db):
+    """Idempotent: inserts the confirmed Round-of-32 fixtures if missing.
+    Never touches a fixture that already exists, so manual DB edits (filling
+    in later rounds, fixing a name) are always safe."""
+    try:
+        col = db["fixtures"]
+        inserted = 0
+        for fixture in build_knockout_fixtures():
+            result = await col.update_one(
+                {"match_id": fixture["match_id"]},
+                {"$setOnInsert": fixture},
+                upsert=True,
+            )
+            if result.upserted_id:
+                inserted += 1
+        if inserted:
+            print(f"Seeded {inserted} knockout fixture(s).")
+    except Exception as exc:
+        print(f"WARNING: knockout fixture seed skipped — {exc}")

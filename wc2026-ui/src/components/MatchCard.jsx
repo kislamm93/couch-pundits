@@ -57,6 +57,22 @@ function CheckIcon({ className = 'w-3.5 h-3.5' }) {
   )
 }
 
+function pickLabel(prediction, fixture) {
+  if (!prediction) return 'No pick'
+  let label = `Your pick: ${prediction.pred_home}–${prediction.pred_away}`
+  if (prediction.pred_penalty_winner) {
+    const team = prediction.pred_penalty_winner === 'home' ? fixture.home_team : fixture.away_team
+    label += ` (${team} on tie breaker)`
+  }
+  return label
+}
+
+function PenaltyResult({ fixture }) {
+  if (fixture.home_score !== fixture.away_score || !fixture.penalty_winner) return null
+  const team = fixture.penalty_winner === 'home' ? fixture.home_team : fixture.away_team
+  return <p className="text-xs text-muted text-center">{team} won the tie breaker</p>
+}
+
 function PointsBadge({ points }) {
   if (points === null || points === undefined) return null
   return (
@@ -74,8 +90,11 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
   // so we infer "live" from the clock; the poller keeps the score fresh.
   const isLive = isLocked && !isFinished
 
+  const isKnockout = fixture.stage === 'knockout'
+
   const [homeVal, setHomeVal] = useState(prediction?.pred_home ?? 0)
   const [awayVal, setAwayVal] = useState(prediction?.pred_away ?? 0)
+  const [penaltyVal, setPenaltyVal] = useState(prediction?.pred_penalty_winner ?? null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(!!prediction)
 
@@ -102,29 +121,39 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
 
   const dirty =
     !prediction
-      ? homeVal !== 0 || awayVal !== 0
+      ? homeVal !== 0 || awayVal !== 0 || penaltyVal !== null
       : homeVal !== prediction.pred_home || awayVal !== prediction.pred_away
+        || penaltyVal !== (prediction.pred_penalty_winner ?? null)
 
   useEffect(() => {
     if (prediction) {
       setHomeVal(prediction.pred_home)
       setAwayVal(prediction.pred_away)
+      setPenaltyVal(prediction.pred_penalty_winner ?? null)
       setSaved(true)
     }
   }, [prediction])
+
+  // The penalty picker only shows for a predicted draw — clear a stale pick
+  // if the user moves the score away from a draw and back.
+  useEffect(() => {
+    if (homeVal !== awayVal) setPenaltyVal(null)
+  }, [homeVal, awayVal])
 
   async function handleSave() {
     setSaving(true)
     const prevHome = homeVal
     const prevAway = awayVal
+    const prevPenalty = penaltyVal
     setSaved(true)
     try {
-      await putPrediction(fixture.match_id, homeVal, awayVal)
+      await putPrediction(fixture.match_id, homeVal, awayVal, penaltyVal)
       onSaved?.()
     } catch (err) {
       setSaved(false)
       setHomeVal(prevHome)
       setAwayVal(prevAway)
+      setPenaltyVal(prevPenalty)
       onError?.(err.message)
     } finally {
       setSaving(false)
@@ -139,7 +168,7 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-muted bg-border rounded-full px-2 py-0.5">
-            Group {fixture.group}
+            {fixture.group ? `Group ${fixture.group}` : fixture.round}
           </span>
           {auth?.username === 'shohan' && (
             <span className="text-xs font-semibold text-accent bg-border rounded-full px-2 py-0.5">
@@ -186,9 +215,10 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
               <span>{teamFlag(fixture.away_team)}</span>
             </span>
           </div>
+          <PenaltyResult fixture={fixture} />
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-muted">
-              {prediction ? `Your pick: ${prediction.pred_home}–${prediction.pred_away}` : 'No pick'}
+              {pickLabel(prediction, fixture)}
             </span>
             <div className="flex items-center gap-2 flex-shrink-0">
               {!prediction ? (
@@ -217,9 +247,10 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
               <span>{teamFlag(fixture.away_team)}</span>
             </span>
           </div>
+          <PenaltyResult fixture={fixture} />
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-muted">
-              {prediction ? `Your pick: ${prediction.pred_home}–${prediction.pred_away}` : 'No pick'}
+              {pickLabel(prediction, fixture)}
             </span>
             <div className="flex items-center gap-2 flex-shrink-0">
               <PointsBadge points={prediction?.points} />
@@ -237,6 +268,29 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
             <span className="font-semibold">{teamFlag(fixture.away_team)} {fixture.away_team}</span>
             <Stepper value={awayVal} onChange={setAwayVal} />
           </div>
+          {isKnockout && homeVal === awayVal && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-xs text-muted text-center">Predicting a draw — who wins the tie breaker?</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPenaltyVal(penaltyVal === 'home' ? null : 'home')}
+                  className={`flex-1 py-2 px-2 rounded-xl text-sm font-semibold border transition-colors truncate ${
+                    penaltyVal === 'home' ? 'bg-accent text-bg border-accent' : 'bg-transparent text-muted border-border'
+                  }`}
+                >
+                  {teamFlag(fixture.home_team)} {fixture.home_team}
+                </button>
+                <button
+                  onClick={() => setPenaltyVal(penaltyVal === 'away' ? null : 'away')}
+                  className={`flex-1 py-2 px-2 rounded-xl text-sm font-semibold border transition-colors truncate ${
+                    penaltyVal === 'away' ? 'bg-accent text-bg border-accent' : 'bg-transparent text-muted border-border'
+                  }`}
+                >
+                  {teamFlag(fixture.away_team)} {fixture.away_team}
+                </button>
+              </div>
+            </div>
+          )}
           {saved && !dirty && (
             <p className="text-xs text-muted text-center">Pick locked in — editable until kickoff</p>
           )}

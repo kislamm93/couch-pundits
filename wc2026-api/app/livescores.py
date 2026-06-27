@@ -99,9 +99,14 @@ async def _apply_score(fixture, home, away, *, finished):
         update["status"] = "finished"
     await fixtures_col().update_one({"match_id": match_id}, {"$set": update})
 
+    # The feed doesn't reliably expose shootout winners, so penalty_winner stays
+    # whatever's already on the fixture (None unless an admin set it by hand).
     preds = await predictions_col().find({"match_id": match_id}).to_list(length=None)
     for pred in preds:
-        pts = _compute_points(pred["pred_home"], pred["pred_away"], home, away)
+        pts = _compute_points(
+            pred["pred_home"], pred["pred_away"], home, away,
+            pred.get("pred_penalty_winner"), fixture.get("penalty_winner"),
+        )
         await predictions_col().update_one({"_id": pred["_id"]}, {"$set": {"points": pts}})
 
     if finished:

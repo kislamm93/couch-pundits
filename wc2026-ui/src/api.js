@@ -70,10 +70,14 @@ export function getPredictionsMe() {
   return request('/predictions/me')
 }
 
-export function putPrediction(matchId, predHome, predAway) {
+export function putPrediction(matchId, predHome, predAway, predPenaltyWinner = null) {
   return request(`/predictions/${matchId}`, {
     method: 'PUT',
-    body: JSON.stringify({ pred_home: predHome, pred_away: predAway }),
+    body: JSON.stringify({
+      pred_home: predHome,
+      pred_away: predAway,
+      pred_penalty_winner: predPenaltyWinner,
+    }),
   })
 }
 

@@ -210,6 +210,7 @@ export default function FilterPanel({ fixtures, filters, onChange, onClose }) {
                 className="w-full appearance-none bg-bg border border-border rounded-xl px-4 py-2.5 text-base font-sans font-medium text-fg outline-none focus:border-accent transition-colors cursor-pointer"
               >
                 <option value="All">All groups</option>
+                <option value="KO">Knockout stage</option>
                 {GROUPS.map(g => (
                   <option key={g} value={g}>Group {g}</option>
                 ))}

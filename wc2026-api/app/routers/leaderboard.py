@@ -45,9 +45,11 @@ async def leaderboard(
             "$group": {
                 "_id": "$account_id",
                 "total_points": {"$sum": "$points"},
-                "exact_count": {"$sum": {"$cond": [{"$eq": ["$points", 5]}, 1, 0]}},
+                # 7 and 4 are the exact/correct tiers (5/2) plus the +2 knockout
+                # penalty-shootout bonus — still exact/correct picks underneath.
+                "exact_count": {"$sum": {"$cond": [{"$in": ["$points", [5, 7]]}, 1, 0]}},
                 "diff_count": {"$sum": {"$cond": [{"$eq": ["$points", 3]}, 1, 0]}},
-                "correct_count": {"$sum": {"$cond": [{"$eq": ["$points", 2]}, 1, 0]}},
+                "correct_count": {"$sum": {"$cond": [{"$in": ["$points", [2, 4]]}, 1, 0]}},
                 "played": {"$sum": 1},
             }
         },
