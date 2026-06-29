@@ -58,6 +58,9 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
                   </p>
                   <p className="text-xs text-muted">
                     Pick: <span className="font-bold text-fg">{p.pred_home}–{p.pred_away}</span>
+                    {p.pred_penalty_winner && (
+                      <span> ({(p.pred_penalty_winner === 'home' ? p.home_team : p.away_team)} to go through)</span>
+                    )}
                     <span className="ml-2">Result: <span className="font-bold text-fg">{p.home_score}–{p.away_score}</span></span>
                   </p>
                 </div>

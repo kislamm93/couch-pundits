@@ -62,7 +62,7 @@ function pickLabel(prediction, fixture) {
   let label = `Your pick: ${prediction.pred_home}–${prediction.pred_away}`
   if (prediction.pred_penalty_winner) {
     const team = prediction.pred_penalty_winner === 'home' ? fixture.home_team : fixture.away_team
-    label += ` (${team} on tie breaker)`
+    label += ` (${team} to go through)`
   }
   return label
 }
@@ -351,6 +351,11 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
                                 <div key={p.username} className="flex items-center justify-between gap-2 text-sm pl-2">
                                   <span className={`truncate flex-1 ${isMe ? 'text-accent font-semibold' : ''}`}>
                                     {p.username}{isMe && <span className="text-xs font-normal text-muted"> (you)</span>}
+                                    {p.pred_penalty_winner && (
+                                      <span className="text-xs font-normal text-muted">
+                                        {' '}({(p.pred_penalty_winner === 'home' ? fixture.home_team : fixture.away_team)} to go through)
+                                      </span>
+                                    )}
                                   </span>
                                   {scored ? (
                                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
