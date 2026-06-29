@@ -83,6 +83,16 @@ KNOCKOUT_R32 = [
     (76, "2026-06-29", "12:00 UTC-5", "Brazil", "Japan", "Houston"),
     (77, "2026-06-30", "17:00 UTC-4", "France", "Sweden", "New York/New Jersey (East Rutherford)"),
     (78, "2026-06-30", "12:00 UTC-5", "Ivory Coast", "Norway", "Dallas (Arlington)"),
+    (79, "2026-06-30", "19:00 UTC-6", "Mexico", "Ecuador", "Mexico City"),
+    (80, "2026-07-01", "12:00 UTC-4", "Ghana", "Colombia", "Atlanta"),
+    (81, "2026-07-01", "17:00 UTC-7", "USA", "Bosnia & Herzegovina", "San Francisco Bay Area (Santa Clara)"),
+    (82, "2026-07-01", "13:00 UTC-7", "Belgium", "Senegal", "Seattle"),
+    (83, "2026-07-02", "19:00 UTC-4", "Portugal", "Croatia", "Toronto"),
+    (84, "2026-07-02", "12:00 UTC-7", "Spain", "Austria", "Los Angeles (Inglewood)"),
+    (85, "2026-07-02", "20:00 UTC-7", "Switzerland", "Algeria", "Vancouver"),
+    (86, "2026-07-03", "18:00 UTC-4", "Argentina", "Cape Verde", "Miami (Miami Gardens)"),
+    (87, "2026-07-03", "20:30 UTC-5", "DR Congo", "England", "Kansas City"),
+    (88, "2026-07-03", "13:00 UTC-5", "Australia", "Egypt", "Dallas (Arlington)"),
 ]
 
 
