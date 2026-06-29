@@ -3,19 +3,43 @@ import { teamFlag } from '../teamFlags'
 import { pointBadgeClass } from '../scoring'
 import { getUserPredictions } from '../api'
 
+const PAGE_SIZE = 5
+
 export default function LeaderboardRow({ rank, username, total_points, exact_count, favorite_team, leagueId, isMe }) {
   const [open, setOpen] = useState(false)
   const [picks, setPicks] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
 
   async function toggle() {
     if (open) { setOpen(false); return }
     setOpen(true)
     if (picks === null) {
       setLoading(true)
-      try { setPicks(await getUserPredictions(username, leagueId)) }
-      catch { setPicks([]) }
-      finally { setLoading(false) }
+      try {
+        const page = await getUserPredictions(username, leagueId, { skip: 0, limit: PAGE_SIZE })
+        setPicks(page)
+        setHasMore(page.length === PAGE_SIZE)
+      } catch {
+        setPicks([])
+        setHasMore(false)
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  async function loadMore() {
+    setLoadingMore(true)
+    try {
+      const page = await getUserPredictions(username, leagueId, { skip: picks.length, limit: PAGE_SIZE })
+      setPicks([...picks, ...page])
+      setHasMore(page.length === PAGE_SIZE)
+    } catch {
+      setHasMore(false)
+    } finally {
+      setLoadingMore(false)
     }
   }
 
@@ -69,6 +93,15 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
                 </span>
               </div>
             ))
+          )}
+          {!loading && hasMore && (
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="w-full text-xs font-semibold text-accent text-center py-2 disabled:opacity-50"
+            >
+              {loadingMore ? 'Loading…' : 'Load more'}
+            </button>
           )}
         </div>
       )}

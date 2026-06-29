@@ -94,7 +94,10 @@ export function getMyLeagues() {
   return request('/leagues/me')
 }
 
-export function getUserPredictions(username, leagueId = null) {
-  const qs = leagueId ? `?league_id=${encodeURIComponent(leagueId)}` : ''
-  return request(`/predictions/user/${encodeURIComponent(username)}${qs}`)
+export function getUserPredictions(username, leagueId = null, { skip = 0, limit = 5 } = {}) {
+  const params = new URLSearchParams()
+  if (leagueId) params.set('league_id', leagueId)
+  params.set('skip', skip)
+  params.set('limit', limit)
+  return request(`/predictions/user/${encodeURIComponent(username)}?${params}`)
 }

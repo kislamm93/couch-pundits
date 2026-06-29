@@ -12,6 +12,7 @@ const SCORING_RULES = [
   { pts: 3, label: 'Correct goal difference', desc: 'Right winning margin — e.g. you said 2–1, it ends 3–2' },
   { pts: 2, label: 'Correct outcome', desc: 'Right winner with the wrong score', note: 'A correctly predicted draw scores 2, not 3' },
   { pts: 0, label: 'Wrong outcome', desc: 'Incorrect result' },
+  { pts: 2, label: 'Tie breaker bonus', desc: 'Knockout draw — pick who goes through on penalties', note: 'Bonus on top of your score/outcome points', highlight: true },
 ]
 
 export default function LeaderboardScreen() {
@@ -96,7 +97,12 @@ export default function LeaderboardScreen() {
         {rulesOpen && (
           <div className="mt-3 bg-card border border-border rounded-xl p-4 space-y-2">
             {SCORING_RULES.map(r => (
-              <div key={r.pts} className="flex items-center justify-between gap-4">
+              <div
+                key={r.label}
+                className={`flex items-center justify-between gap-4 ${
+                  r.highlight ? 'bg-accent/10 rounded-lg px-2 py-1.5 -mx-2' : ''
+                }`}
+              >
                 <div>
                   <p className="text-sm font-semibold">{r.label}</p>
                   <p className="text-xs text-muted">{r.desc}</p>

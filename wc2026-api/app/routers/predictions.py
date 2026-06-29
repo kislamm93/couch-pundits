@@ -71,6 +71,8 @@ async def _fetch_picks(match_id: int, member_ids) -> List[MatchPredictionRow]:
 async def user_predictions(
     username: str,
     league_id: Optional[str] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(5, ge=1, le=50),
     account_id: str = Depends(get_current_account),
 ):
     """All locked predictions for a given user.
@@ -129,6 +131,8 @@ async def user_predictions(
         }}})
 
     pipeline.append({"$sort": {"fixture.kickoff_utc": -1}})
+    pipeline.append({"$skip": skip})
+    pipeline.append({"$limit": limit})
     rows = await predictions_col().aggregate(pipeline).to_list(length=None)
     return [
         UserPredictionDetail(
