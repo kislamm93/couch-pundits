@@ -124,6 +124,7 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
       ? homeVal !== 0 || awayVal !== 0 || penaltyVal !== null
       : homeVal !== prediction.pred_home || awayVal !== prediction.pred_away
         || penaltyVal !== (prediction.pred_penalty_winner ?? null)
+  const locked = saved && !dirty
 
   useEffect(() => {
     if (prediction) {
@@ -274,32 +275,38 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
               <div className="flex gap-2">
                 <button
                   onClick={() => setPenaltyVal(penaltyVal === 'home' ? null : 'home')}
-                  className={`flex-1 py-2 px-2 rounded-xl text-sm font-semibold border transition-colors truncate ${
-                    penaltyVal === 'home' ? 'bg-accent text-bg border-accent' : 'bg-transparent text-muted border-border'
+                  className={`flex-1 py-2 px-2 rounded-xl text-sm font-semibold border transition-colors truncate flex items-center justify-center gap-1 ${
+                    penaltyVal === 'home'
+                      ? locked ? 'bg-accent/20 text-accent border-accent/40' : 'bg-accent text-bg border-accent'
+                      : 'bg-transparent text-muted border-border'
                   }`}
                 >
+                  {penaltyVal === 'home' && locked && <LockIcon className="w-3 h-3" />}
                   {teamFlag(fixture.home_team)} {fixture.home_team}
                 </button>
                 <button
                   onClick={() => setPenaltyVal(penaltyVal === 'away' ? null : 'away')}
-                  className={`flex-1 py-2 px-2 rounded-xl text-sm font-semibold border transition-colors truncate ${
-                    penaltyVal === 'away' ? 'bg-accent text-bg border-accent' : 'bg-transparent text-muted border-border'
+                  className={`flex-1 py-2 px-2 rounded-xl text-sm font-semibold border transition-colors truncate flex items-center justify-center gap-1 ${
+                    penaltyVal === 'away'
+                      ? locked ? 'bg-accent/20 text-accent border-accent/40' : 'bg-accent text-bg border-accent'
+                      : 'bg-transparent text-muted border-border'
                   }`}
                 >
+                  {penaltyVal === 'away' && locked && <LockIcon className="w-3 h-3" />}
                   {teamFlag(fixture.away_team)} {fixture.away_team}
                 </button>
               </div>
             </div>
           )}
-          {saved && !dirty && (
+          {locked && (
             <p className="text-xs text-muted text-center">Pick locked in — editable until kickoff</p>
           )}
           <button
             onClick={handleSave}
-            disabled={saving || (!dirty && saved)}
+            disabled={saving || locked}
             className="w-full py-2.5 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
           >
-            {saving ? 'Saving…' : saved && !dirty ? (<><LockIcon className="w-4 h-4" /> Locked</>) : 'Save pick'}
+            {saving ? 'Saving…' : locked ? (<><LockIcon className="w-4 h-4" /> Locked</>) : 'Save pick'}
           </button>
         </div>
       )}
