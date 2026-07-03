@@ -85,9 +85,8 @@ async def _active_fixtures():
 async def _apply_score(fixture, home, away, *, finished):
     """Write the score and recompute every prediction's points for this match.
 
-    Called only on a real score change (live) or at full time, so it always
-    rescores. A final update also flips status to "finished". Logs an explicit
-    line per event.
+    finished=True  → set status "finished"
+    finished=False → live or FT-draw interim update (ET still to come)
     """
     match_id = fixture["match_id"]
     teams = f"{fixture['home_team']} v {fixture['away_team']}"
@@ -99,8 +98,8 @@ async def _apply_score(fixture, home, away, *, finished):
         update["status"] = "finished"
     await fixtures_col().update_one({"match_id": match_id}, {"$set": update})
 
-    # The feed doesn't reliably expose shootout winners, so penalty_winner stays
-    # whatever's already on the fixture (None unless an admin set it by hand).
+    # The feed doesn't expose shootout winners, so penalty_winner stays whatever's
+    # already on the fixture (None unless an admin set it by hand).
     preds = await predictions_col().find({"match_id": match_id}).to_list(length=None)
     for pred in preds:
         pts = _compute_points(
@@ -141,7 +140,11 @@ async def _apply_event(event):
         return False  # no usable score yet — wait for the next poll
 
     if status in FINISHED_STATUSES:
-        await _apply_score(fixture, home, away, finished=True)
+        if status == "FT" and home == away:
+            # FT draw → extra time is coming; update score but don't finalise
+            await _apply_score(fixture, home, away, finished=False)
+        else:
+            await _apply_score(fixture, home, away, finished=True)
         return True
     if status in LIVE_STATUSES:
         if (fixture.get("home_score"), fixture.get("away_score")) != (home, away):

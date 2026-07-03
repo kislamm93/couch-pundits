@@ -365,8 +365,10 @@ export default function MatchCard({ fixture, prediction, onSaved, onError }) {
                                     )}
                                   </span>
                                   {scored ? (
-                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${pointBadgeClass(p.points)}`}>
-                                      +{p.points}
+                                    <span className="flex items-center gap-1 flex-shrink-0">
+                                      <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${pointBadgeClass(p.points)}`}>
+                                        +{p.points}
+                                      </span>
                                     </span>
                                   ) : (
                                     <span className="text-xs font-semibold text-yellow-400 flex-shrink-0">pending</span>
