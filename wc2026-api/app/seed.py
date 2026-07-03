@@ -140,3 +140,61 @@ async def seed_knockout_if_missing(db):
             print(f"Seeded {inserted} knockout fixture(s).")
     except Exception as exc:
         print(f"WARNING: knockout fixture seed skipped — {exc}")
+
+
+# (match_id, date, "HH:MM UTC±N", home, away, city, sportsdb_event_id)
+# Matches 95-96 (Argentina/Cape Verde vs Australia/Egypt, Switzerland vs Colombia/Ghana)
+# are pending today's R32 results — add once teams are confirmed.
+KNOCKOUT_R16 = [
+    (89, "2026-07-04", "12:00 UTC-5", "Canada",   "Morocco",  "Houston",                               "2505183"),
+    (90, "2026-07-04", "17:00 UTC-4", "Paraguay",  "France",   "Philadelphia",                         "2505624"),
+    (91, "2026-07-05", "16:00 UTC-4", "Brazil",    "Norway",   "New York/New Jersey (East Rutherford)", "2505462"),
+    (92, "2026-07-05", "18:00 UTC-6", "Mexico",    "England",  "Mexico City",                           "2507706"),
+    (93, "2026-07-06", "14:00 UTC-5", "Portugal",  "Spain",    "Dallas (Arlington)",                    "2511721"),
+    (94, "2026-07-06", "17:00 UTC-7", "USA",       "Belgium",  "Seattle",                               "2507707"),
+]
+
+
+def build_r16_fixtures():
+    """The confirmed Round-of-16 fixtures — see KNOCKOUT_R16 above."""
+    with open(DATA_DIR / "worldcup.stadiums.json") as f:
+        stadiums_data = json.load(f)
+    city_to_stadium = {s["city"]: s["name"] for s in stadiums_data["stadiums"]}
+
+    fixtures = []
+    for match_id, date, time_str, home, away, city, sportsdb_event_id in KNOCKOUT_R16:
+        fixtures.append({
+            "match_id": match_id,
+            "group": None,
+            "round": "Round of 16",
+            "home_team": home,
+            "away_team": away,
+            "stadium": city_to_stadium.get(city, city),
+            "city": city,
+            "kickoff_utc": parse_kickoff_utc(date, time_str),
+            "stage": "knockout",
+            "home_score": None,
+            "away_score": None,
+            "status": "scheduled",
+            "sportsdb_event_id": sportsdb_event_id,
+        })
+    return fixtures
+
+
+async def seed_r16_if_missing(db):
+    """Idempotent: inserts confirmed Round-of-16 fixtures if missing."""
+    try:
+        col = db["fixtures"]
+        inserted = 0
+        for fixture in build_r16_fixtures():
+            result = await col.update_one(
+                {"match_id": fixture["match_id"]},
+                {"$setOnInsert": fixture},
+                upsert=True,
+            )
+            if result.upserted_id:
+                inserted += 1
+        if inserted:
+            print(f"Seeded {inserted} R16 fixture(s).")
+    except Exception as exc:
+        print(f"WARNING: R16 fixture seed skipped — {exc}")
