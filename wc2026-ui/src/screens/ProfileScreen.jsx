@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { getLeaderboard, getPredictionsMe, getFixtures, updateProfile } from '../api'
+import { getLeaderboard, getPredictionsMe, getFixtures, updateProfile, getPredictionDistribution } from '../api'
 import { useAuth } from '../context/AuthContext'
 import Skeleton from '../components/Skeleton'
 import ThemeToggle from '../components/ThemeToggle'
 import { teamFlag } from '../teamFlags'
 import { pointTextClass } from '../scoring'
+import ScoreDistributionChart from '../components/ScoreDistributionChart'
 
 export default function ProfileScreen() {
   const { auth, logout, login } = useAuth()
@@ -18,19 +19,22 @@ export default function ProfileScreen() {
   const [msg, setMsg] = useState(null) // { text, error }
   const [editing, setEditing] = useState(false)
   const [predOpen, setPredOpen] = useState(false)
+  const [distribution, setDistribution] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const [lb, preds, fixtures] = await Promise.all([
+        const [lb, preds, fixtures, dist] = await Promise.all([
           getLeaderboard(),
           getPredictionsMe(),
           getFixtures(),
+          getPredictionDistribution(),
         ])
         const myRow = lb.find((r) => r.username === auth?.username)
         setStats(myRow || { total_points: 0, exact_count: 0, diff_count: 0, correct_count: 0, played: 0 })
         setPredictions(preds)
+        setDistribution(dist)
         const map = {}
         for (const f of fixtures) map[f.match_id] = f
         setFixtureMap(map)
@@ -145,6 +149,14 @@ export default function ProfileScreen() {
                 <p className="text-xs text-muted mt-0.5">{s.label}</p>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Prediction distribution */}
+        {!loading && Object.keys(distribution).length > 0 && (
+          <div className="bg-card border border-border rounded-card p-4">
+            <h2 className="text-sm font-bold text-muted uppercase tracking-widest mb-4">Prediction distribution</h2>
+            <ScoreDistributionChart distribution={distribution} />
           </div>
         )}
 
