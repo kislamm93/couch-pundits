@@ -143,8 +143,6 @@ async def seed_knockout_if_missing(db):
 
 
 # (match_id, date, "HH:MM UTC±N", home, away, city, sportsdb_event_id)
-# Matches 95-96 (Argentina/Cape Verde vs Australia/Egypt, Switzerland vs Colombia/Ghana)
-# are pending today's R32 results — add once teams are confirmed.
 KNOCKOUT_R16 = [
     (89, "2026-07-04", "12:00 UTC-5", "Canada",   "Morocco",  "Houston",                               "2505183"),
     (90, "2026-07-04", "17:00 UTC-4", "Paraguay",  "France",   "Philadelphia",                         "2505624"),
@@ -152,6 +150,8 @@ KNOCKOUT_R16 = [
     (92, "2026-07-05", "18:00 UTC-6", "Mexico",    "England",  "Mexico City",                           "2507706"),
     (93, "2026-07-06", "14:00 UTC-5", "Portugal",  "Spain",    "Dallas (Arlington)",                    "2511721"),
     (94, "2026-07-06", "17:00 UTC-7", "USA",       "Belgium",  "Seattle",                               "2507707"),
+    (95, "2026-07-07", "12:00 UTC-4", "Argentina", "Egypt",    "Atlanta",                               "2513670"),
+    (96, "2026-07-07", "13:00 UTC-7", "Switzerland", "Colombia", "Vancouver",                           "2513671"),
 ]
 
 
