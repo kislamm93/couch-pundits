@@ -82,11 +82,14 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${
+                className={`relative flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${
                   tab === t ? 'bg-accent text-bg border-accent' : 'border-border text-muted'
                 }`}
               >
                 {t === 'picks' ? 'Last picks' : 'Distribution'}
+                {t === 'distribution' && (
+                  <span className="text-[9px] font-black tracking-wide" style={{ color: tab === 'distribution' ? 'inherit' : '#00E07A' }}>NEW</span>
+                )}
               </button>
             ))}
           </div>

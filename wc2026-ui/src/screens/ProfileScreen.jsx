@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getLeaderboard, getPredictionsMe, getFixtures, updateProfile, getPredictionDistribution } from '../api'
+import { getLeaderboard, getPredictionsMe, getFixtures, updateProfile, getUserPredictionDistribution } from '../api'
 import { useAuth } from '../context/AuthContext'
 import Skeleton from '../components/Skeleton'
 import ThemeToggle from '../components/ThemeToggle'
@@ -29,7 +29,7 @@ export default function ProfileScreen() {
           getLeaderboard(),
           getPredictionsMe(),
           getFixtures(),
-          getPredictionDistribution(),
+          getUserPredictionDistribution(auth.username),
         ])
         const myRow = lb.find((r) => r.username === auth?.username)
         setStats(myRow || { total_points: 0, exact_count: 0, diff_count: 0, correct_count: 0, played: 0 })

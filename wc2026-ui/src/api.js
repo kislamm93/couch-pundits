@@ -94,10 +94,6 @@ export function getMyLeagues() {
   return request('/leagues/me')
 }
 
-export function getPredictionDistribution() {
-  return request('/predictions/me/distribution')
-}
-
 export function getUserPredictionDistribution(username) {
   return request(`/predictions/user/${encodeURIComponent(username)}/distribution`)
 }

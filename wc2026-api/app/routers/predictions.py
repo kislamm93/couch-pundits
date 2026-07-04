@@ -17,17 +17,6 @@ async def my_predictions(account_id: str = Depends(get_current_account)):
     return await cursor.to_list(length=None)
 
 
-@router.get("/me/distribution", response_model=Dict[str, int])
-async def my_prediction_distribution(account_id: str = Depends(get_current_account)):
-    cursor = predictions_col().find({"account_id": account_id}, {"pred_home": 1, "pred_away": 1, "_id": 0})
-    preds = await cursor.to_list(length=None)
-    dist: Dict[str, int] = {}
-    for p in preds:
-        hi, lo = max(p["pred_home"], p["pred_away"]), min(p["pred_home"], p["pred_away"])
-        key = f"{hi}-{lo}"
-        dist[key] = dist.get(key, 0) + 1
-    return dist
-
 
 @router.get("/match/{match_id}", response_model=List[LeaguePicksGroup])
 async def match_predictions(
@@ -95,7 +84,7 @@ async def user_prediction_distribution(
             raise HTTPException(status_code=403, detail="Not in the same league")
 
     cursor = predictions_col().find(
-        {"account_id": target["account_id"]},
+        {"account_id": target["account_id"], "points": {"$ne": None}},
         {"pred_home": 1, "pred_away": 1, "_id": 0},
     )
     preds = await cursor.to_list(length=None)
