@@ -68,7 +68,7 @@ async def _fetch_picks(match_id: int, member_ids) -> List[MatchPredictionRow]:
     ]
 
 
-@router.get("/user/{username}/distribution", response_model=Dict[str, int])
+@router.get("/user/{username}/distribution")
 async def user_prediction_distribution(
     username: str,
     account_id: str = Depends(get_current_account),
@@ -88,12 +88,16 @@ async def user_prediction_distribution(
         {"pred_home": 1, "pred_away": 1, "_id": 0},
     )
     preds = await cursor.to_list(length=None)
-    dist: Dict[str, int] = {}
+    counts: Dict[str, int] = {}
     for p in preds:
         hi, lo = max(p["pred_home"], p["pred_away"]), min(p["pred_home"], p["pred_away"])
         key = f"{hi}-{lo}"
-        dist[key] = dist.get(key, 0) + 1
-    return dist
+        counts[key] = counts.get(key, 0) + 1
+    total = sum(counts.values())
+    return {
+        score: {"count": count, "pct": round(count / total * 100, 1)}
+        for score, count in counts.items()
+    }
 
 
 @router.get("/user/{username}", response_model=List[UserPredictionDetail])

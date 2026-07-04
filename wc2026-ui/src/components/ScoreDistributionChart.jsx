@@ -3,14 +3,12 @@ import React, { useState } from 'react'
 export default function ScoreDistributionChart({ distribution }) {
   const [hoveredScore, setHoveredScore] = useState(null)
 
-  const bars = Object.entries(distribution).sort((a, b) => b[1] - a[1])
-  const max = bars[0]?.[1] ?? 1
-  const total = bars.reduce((s, [, c]) => s + c, 0)
+  const bars = Object.entries(distribution).sort((a, b) => b[1].count - a[1].count)
+  const max = bars[0]?.[1].count ?? 1
 
   return (
     <div className="space-y-1.5">
-      {bars.map(([score, count]) => {
-        const pct = (count / total) * 100
+      {bars.map(([score, { count, pct }]) => {
         const isHovered = hoveredScore === score
         return (
           <div
@@ -26,8 +24,11 @@ export default function ScoreDistributionChart({ distribution }) {
                 style={{ width: `${(count / max) * 100}%`, opacity: hoveredScore === null || isHovered ? 1 : 0.4 }}
               />
             </div>
-            <span className="text-xs tabular-nums w-16 flex-shrink-0 transition-all" style={{ opacity: hoveredScore === null || isHovered ? 1 : 0.4 }}>
-              {isHovered ? `${pct.toFixed(1)}%` : count}
+            <span
+              className="text-xs tabular-nums flex-shrink-0 whitespace-nowrap transition-all"
+              style={{ opacity: hoveredScore === null || isHovered ? 1 : 0.4 }}
+            >
+              {count} ({pct}%)
             </span>
           </div>
         )
