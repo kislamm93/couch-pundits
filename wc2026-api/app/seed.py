@@ -198,3 +198,59 @@ async def seed_r16_if_missing(db):
             print(f"Seeded {inserted} R16 fixture(s).")
     except Exception as exc:
         print(f"WARNING: R16 fixture seed skipped — {exc}")
+
+
+# (match_id, date, "HH:MM UTC±N", home, away, city, sportsdb_event_id)
+KNOCKOUT_QF = [
+    (97,  "2026-07-09", "16:00 UTC-4", "France",              "Morocco",              "New York/New Jersey (East Rutherford)", "TODO"),
+    (98,  "2026-07-10", "15:00 UTC-4", "Spain",               "Belgium",              "Miami (Miami Gardens)",                "TODO"),
+    (99,  "2026-07-11", "14:00 UTC-7", "Norway",              "England",              "Los Angeles (Inglewood)",              "TODO"),
+    (100, "2026-07-11", "20:00 UTC-5", "Argentina",           "Switzerland",          "Dallas (Arlington)",                   "TODO"),
+]
+
+
+def build_qf_fixtures():
+    """The confirmed Quarter-Final fixtures — see KNOCKOUT_QF above."""
+    with open(DATA_DIR / "worldcup.stadiums.json") as f:
+        stadiums_data = json.load(f)
+    city_to_stadium = {s["city"]: s["name"] for s in stadiums_data["stadiums"]}
+
+    fixtures = []
+    for match_id, date, time_str, home, away, city, sportsdb_event_id in KNOCKOUT_QF:
+        fixture = {
+            "match_id": match_id,
+            "group": None,
+            "round": "Quarter-Final",
+            "home_team": home,
+            "away_team": away,
+            "stadium": city_to_stadium.get(city, city),
+            "city": city,
+            "kickoff_utc": parse_kickoff_utc(date, time_str),
+            "stage": "knockout",
+            "home_score": None,
+            "away_score": None,
+            "status": "scheduled",
+        }
+        if sportsdb_event_id and sportsdb_event_id != "TODO":
+            fixture["sportsdb_event_id"] = sportsdb_event_id
+        fixtures.append(fixture)
+    return fixtures
+
+
+async def seed_qf_if_missing(db):
+    """Idempotent: inserts confirmed Quarter-Final fixtures if missing."""
+    try:
+        col = db["fixtures"]
+        inserted = 0
+        for fixture in build_qf_fixtures():
+            result = await col.update_one(
+                {"match_id": fixture["match_id"]},
+                {"$setOnInsert": fixture},
+                upsert=True,
+            )
+            if result.upserted_id:
+                inserted += 1
+        if inserted:
+            print(f"Seeded {inserted} QF fixture(s).")
+    except Exception as exc:
+        print(f"WARNING: QF fixture seed skipped — {exc}")

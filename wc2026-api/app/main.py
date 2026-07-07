@@ -10,7 +10,7 @@ from pymongo.errors import DuplicateKeyError
 from app.db import users_col, fixtures_col
 from app.security import get_current_account, create_token
 from app.models import MeResponse, ThemeRequest, ProfileUpdateRequest, ProfileResponse
-from app.seed import seed_if_empty, seed_knockout_if_missing, seed_r16_if_missing
+from app.seed import seed_if_empty, seed_knockout_if_missing, seed_r16_if_missing, seed_qf_if_missing
 from app.backfill_event_ids import backfill_event_ids
 from app.livescores import run_poller
 from app.routers import auth, fixtures, predictions, leaderboard, results, leagues
@@ -34,6 +34,7 @@ async def startup():
     await seed_if_empty(get_db())
     await seed_knockout_if_missing(get_db())
     await seed_r16_if_missing(get_db())
+    await seed_qf_if_missing(get_db())
     if not settings.admin_key.strip():
         settings.admin_key = secrets.token_urlsafe(24)
         logger.warning(
