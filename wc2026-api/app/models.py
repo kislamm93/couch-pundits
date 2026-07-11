@@ -33,6 +33,7 @@ class ThemeRequest(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     username: Optional[str] = None
     favorite_team: Optional[str] = None
+    new_password: Optional[str] = None
 
 
 class ProfileResponse(BaseModel):

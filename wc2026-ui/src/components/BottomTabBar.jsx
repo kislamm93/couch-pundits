@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 const TABS = [
   { id: 'matches', label: 'Fixtures', icon: IconBall },
@@ -39,16 +39,6 @@ function IconUser({ active }) {
 }
 
 export default function BottomTabBar({ active, onChange }) {
-  const [distSeen, setDistSeen] = useState(() => localStorage.getItem('wc_dist_seen') === '1')
-
-  function handleTabClick(tabId) {
-    if (tabId === 'profile' && !distSeen) {
-      localStorage.setItem('wc_dist_seen', '1')
-      setDistSeen(true)
-    }
-    onChange(tabId)
-  }
-
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-card border-t border-border flex"
@@ -60,15 +50,10 @@ export default function BottomTabBar({ active, onChange }) {
         return (
           <button
             key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
+            onClick={() => onChange(tab.id)}
             className="flex-1 flex flex-col items-center gap-1 py-3 active:opacity-70 transition-opacity"
           >
-            <div className="relative">
-              <Icon active={isActive} />
-              {tab.id === 'profile' && !distSeen && (
-                <span className="absolute -top-1.5 -right-3 text-[9px] font-black px-1 rounded" style={{ backgroundColor: '#00E07A', color: '#000' }}>NEW</span>
-              )}
-            </div>
+            <Icon active={isActive} />
             <span
               className="text-xs font-medium"
               style={{ color: isActive ? '#00E07A' : '#8A93A3' }}

@@ -8,7 +8,7 @@ from app.config import settings
 from app.db import connect_db, close_db, get_db
 from pymongo.errors import DuplicateKeyError
 from app.db import users_col, fixtures_col
-from app.security import get_current_account, create_token
+from app.security import get_current_account, create_token, hash_password
 from app.models import MeResponse, ThemeRequest, ProfileUpdateRequest, ProfileResponse
 from app.seed import seed_if_empty, seed_knockout_if_missing, seed_r16_if_missing, seed_qf_if_missing
 from app.backfill_event_ids import backfill_event_ids
@@ -125,6 +125,11 @@ async def update_profile(body: ProfileUpdateRequest, account_id: str = Depends(g
             if await users_col().find_one({"username": candidate}):
                 raise HTTPException(status_code=400, detail="Username already taken")
             updates["username"] = candidate
+
+    if body.new_password is not None:
+        if len(body.new_password) < 6:
+            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        updates["password_hash"] = hash_password(body.new_password)
 
     if updates:
         try:

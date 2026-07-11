@@ -87,9 +87,6 @@ export default function LeaderboardRow({ rank, username, total_points, exact_cou
                 }`}
               >
                 {t === 'picks' ? 'Last picks' : 'Distribution'}
-                {t === 'distribution' && (
-                  <span className="text-[9px] font-black tracking-wide" style={{ color: tab === 'distribution' ? 'inherit' : '#00E07A' }}>NEW</span>
-                )}
               </button>
             ))}
           </div>

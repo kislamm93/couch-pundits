@@ -52,10 +52,11 @@ export function saveTheme(theme) {
   })
 }
 
-export function updateProfile({ username, favoriteTeam } = {}) {
+export function updateProfile({ username, favoriteTeam, newPassword } = {}) {
   const body = {}
   if (username !== undefined) body.username = username
   if (favoriteTeam !== undefined) body.favorite_team = favoriteTeam
+  if (newPassword !== undefined) body.new_password = newPassword
   return request('/me', {
     method: 'PATCH',
     body: JSON.stringify(body),

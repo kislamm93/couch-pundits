@@ -18,6 +18,10 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null) // { text, error }
   const [editing, setEditing] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [pwMsg, setPwMsg] = useState(null) // { text, error }
+  const [pwSaving, setPwSaving] = useState(false)
   const [predOpen, setPredOpen] = useState(false)
   const [distribution, setDistribution] = useState({})
   const [loading, setLoading] = useState(true)
@@ -87,7 +91,33 @@ export default function ProfileScreen() {
     setUsernameInput(auth?.username || '')
     setTeamInput(auth?.favoriteTeam || '')
     setMsg(null)
+    setNewPassword('')
+    setConfirmPassword('')
+    setPwMsg(null)
     setEditing(false)
+  }
+
+  async function handlePasswordSave() {
+    setPwMsg(null)
+    if (newPassword.length < 6) {
+      setPwMsg({ text: 'Password must be at least 6 characters', error: true })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwMsg({ text: 'Passwords do not match', error: true })
+      return
+    }
+    setPwSaving(true)
+    try {
+      await updateProfile({ newPassword })
+      setNewPassword('')
+      setConfirmPassword('')
+      setPwMsg({ text: 'Password updated ✓', error: false })
+    } catch (err) {
+      setPwMsg({ text: err.message, error: true })
+    } finally {
+      setPwSaving(false)
+    }
   }
 
   const initial = auth?.username?.[0]?.toUpperCase() || '?'
@@ -219,7 +249,43 @@ export default function ProfileScreen() {
             {msg ? (
               <p className={`text-xs ${msg.error ? 'text-red-400' : 'text-muted'}`}>{msg.text}</p>
             ) : (
-              <p className="text-xs text-muted">Your team powers the “My Team” filter on the Matches tab.</p>
+              <p className="text-xs text-muted">Your team powers the &ldquo;My Team&rdquo; filter on the Matches tab.</p>
+            )}
+          </div>
+
+          <div className="mt-6 space-y-3">
+            <h2 className="text-sm font-bold text-muted uppercase tracking-widest">Change password</h2>
+            <div>
+              <label className="block text-xs text-muted mb-1.5">New password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min. 6 characters"
+                style={{ fontSize: '16px' }}
+                className="w-full bg-card border border-border rounded-xl px-4 py-3 text-fg placeholder-muted outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-muted mb-1.5">Confirm new password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat password"
+                style={{ fontSize: '16px' }}
+                className="w-full bg-card border border-border rounded-xl px-4 py-3 text-fg placeholder-muted outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            <button
+              onClick={handlePasswordSave}
+              disabled={!newPassword || !confirmPassword || pwSaving}
+              className="w-full py-3 rounded-xl font-bold text-bg bg-accent disabled:opacity-40 active:scale-[0.98] transition-transform"
+            >
+              {pwSaving ? 'Updating…' : 'Update password'}
+            </button>
+            {pwMsg && (
+              <p className={`text-xs ${pwMsg.error ? 'text-red-400' : 'text-muted'}`}>{pwMsg.text}</p>
             )}
           </div>
         </div>
