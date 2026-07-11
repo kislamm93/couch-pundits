@@ -254,3 +254,57 @@ async def seed_qf_if_missing(db):
             print(f"Seeded {inserted} QF fixture(s).")
     except Exception as exc:
         print(f"WARNING: QF fixture seed skipped — {exc}")
+
+
+# (match_id, date, "HH:MM UTC±N", home, away, city, sportsdb_event_id)
+# SF2 (match 102) teams TBD — add once QF2/QF4 are settled.
+KNOCKOUT_SF = [
+    (101, "2026-07-14", "14:00 UTC-5", "France", "Spain", "Dallas (Arlington)", "TODO"),
+]
+
+
+def build_sf_fixtures():
+    """The confirmed Semi-Final fixtures — see KNOCKOUT_SF above."""
+    with open(DATA_DIR / "worldcup.stadiums.json") as f:
+        stadiums_data = json.load(f)
+    city_to_stadium = {s["city"]: s["name"] for s in stadiums_data["stadiums"]}
+
+    fixtures = []
+    for match_id, date, time_str, home, away, city, sportsdb_event_id in KNOCKOUT_SF:
+        fixture = {
+            "match_id": match_id,
+            "group": None,
+            "round": "Semi-Final",
+            "home_team": home,
+            "away_team": away,
+            "stadium": city_to_stadium.get(city, city),
+            "city": city,
+            "kickoff_utc": parse_kickoff_utc(date, time_str),
+            "stage": "knockout",
+            "home_score": None,
+            "away_score": None,
+            "status": "scheduled",
+        }
+        if sportsdb_event_id and sportsdb_event_id != "TODO":
+            fixture["sportsdb_event_id"] = sportsdb_event_id
+        fixtures.append(fixture)
+    return fixtures
+
+
+async def seed_sf_if_missing(db):
+    """Idempotent: inserts confirmed Semi-Final fixtures if missing."""
+    try:
+        col = db["fixtures"]
+        inserted = 0
+        for fixture in build_sf_fixtures():
+            result = await col.update_one(
+                {"match_id": fixture["match_id"]},
+                {"$setOnInsert": fixture},
+                upsert=True,
+            )
+            if result.upserted_id:
+                inserted += 1
+        if inserted:
+            print(f"Seeded {inserted} SF fixture(s).")
+    except Exception as exc:
+        print(f"WARNING: SF fixture seed skipped — {exc}")
