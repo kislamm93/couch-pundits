@@ -259,7 +259,8 @@ async def seed_qf_if_missing(db):
 # (match_id, date, "HH:MM UTC±N", home, away, city, sportsdb_event_id)
 # SF2 (match 102) teams TBD — add once QF2/QF4 are settled.
 KNOCKOUT_SF = [
-    (101, "2026-07-14", "14:00 UTC-5", "France", "Spain", "Dallas (Arlington)", "TODO"),
+    (101, "2026-07-14", "14:00 UTC-5", "France",    "Spain",    "Dallas (Arlington)", "TODO"),
+    (102, "2026-07-15", "15:00 UTC-4", "England",   "Argentina", "Atlanta",            "TODO"),
 ]
 
 
